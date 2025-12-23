@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "npm": "^11.7.0"
+  },
+
+  "scripts": {
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "copy:static": "cp -r frontend/build/* backend/src/main/resources/static/",
+    "build:all": "npm run build:frontend && npm run copy:static && cd backend && ./gradlew bootJar"
+  }
+}
