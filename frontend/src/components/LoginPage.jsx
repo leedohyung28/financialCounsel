@@ -1,7 +1,14 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+
+  const moveToSignUp = () => {
+    navigate("./SignUpPage");
+  };
+
   const [isDark, setIsDark] = useState(true);
   const [email, setEmail] = useState("");
 
@@ -40,7 +47,7 @@ export default function LoginPage() {
         </div>
 
         <div className="actions-bottom">
-          <button type="button" className="link-btn">
+          <button type="button" className="link-btn" onClick={moveToSignUp}>
             계정 만들기
           </button>
           <button type="button" className="primary-btn">

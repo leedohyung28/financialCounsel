@@ -1,0 +1,156 @@
+@import "./LoginPage.css";
+
+/* Signup 전용 오버라이드 */
+
+.signup-card {
+  width: 720px; /* 로그인 카드보다 가로로 더 길게 */
+  max-width: 96vw;
+  padding: 40px 40px 32px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.2);
+  margin: 40px auto;
+}
+
+/* 테마별 카드 배경/테두리 */
+
+.theme-light .signup-card {
+  background-color: var(--bg-card-light);
+  border: 1px solid var(--border-light);
+}
+
+.theme-dark .signup-card {
+  background-color: var(--bg-card-dark);
+  border: 1px solid var(--border-dark);
+}
+
+/* 타이틀은 로그인과 동일하게 사용 */
+
+.title-area {
+  margin-bottom: 28px;
+}
+
+.title-main {
+  font-size: 24px;
+  font-weight: 400;
+  margin: 0 0 6px;
+}
+
+.title-sub {
+  font-size: 14px;
+  color: var(--text-muted-light);
+}
+
+.theme-dark .title-sub {
+  color: var(--text-muted-dark);
+}
+
+/* 2열 병렬 폼 레이아웃 */
+
+.grid-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 24px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 640px) {
+  .grid-form {
+    grid-template-columns: 1fr; /* 모바일에서는 단일 컬럼 */
+  }
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.optional {
+  font-size: 11px;
+  color: var(--text-muted-light);
+}
+
+.theme-dark .optional {
+  color: var(--text-muted-dark);
+}
+
+/* 인풋은 로그인 페이지 스타일 재사용 */
+
+.field-input {
+  padding: 10px 10px;
+  font-size: 15px;
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
+  background-color: #ffffff;
+  color: #202124;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.2);
+}
+
+.theme-dark .field-input {
+  background-color: #202124;
+  border-color: var(--border-dark);
+  color: var(--text-main-dark);
+}
+
+.theme-dark .field-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.4);
+}
+
+.select-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #80868b 50%),
+    linear-gradient(135deg, #80868b 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* 액션 버튼은 로그인과 비슷하게 */
+
+.actions-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.link-btn {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.primary-btn {
+  min-width: 88px;
+  padding: 10px 24px;
+  border-radius: 4px;
+  border: none;
+  background-color: var(--primary);
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primary-btn:hover {
+  background-color: var(--primary-hover);
+}

@@ -3,6 +3,8 @@ import AddressSearchPage from "./components/AddressSearchPage";
 import AddressHomePage from "./components/AddressHomePage";
 import React from "react";
 import LoginPage from "./components/LoginPage";
+import SignUpPage from "./components/SignUpPage";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 function App() {
   const [phase, setPhase] = React.useState("home");
@@ -23,7 +25,14 @@ function App() {
   //   <AddressSearchPage initialKeyword={keyword} />
   // );
 
-  return <LoginPage />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/SignUpPage" element={<SignUpPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
