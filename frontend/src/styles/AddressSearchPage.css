@@ -1,0 +1,380 @@
+/* AddressSearchPage.css */
+:root {
+  --bg-main: #04143b;
+  --bg-panel: #061b4f;
+  --bg-input: #ffffff;
+  --accent: #2f6bff;
+  --accent-soft: #20356b;
+  --text-main: #ffffff;
+  --text-sub: #a6b1d8;
+  --border-soft: #25386b;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  --shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --transition-fast: 0.15s ease-out;
+  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  background: radial-gradient(circle at top, #13245d, #020824);
+}
+
+/* 페이지 레이아웃 */
+.page-root {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #071849 0%, #020824 100%);
+  color: var(--text-main);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 56px;
+}
+
+.header-logo {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.header-search {
+  flex: 1;
+  max-width: 720px;
+  margin-left: 40px;
+}
+
+/* 상단 메인 검색 */
+.main-search-form {
+  display: flex;
+  align-items: center;
+  background: #081c4f;
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: var(--shadow-soft);
+}
+
+.main-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #e4ebff;
+  padding: 14px 22px;
+  font-size: 15px;
+  outline: none;
+}
+
+.main-search-input::placeholder {
+  color: #6271b2;
+}
+
+.main-search-btn {
+  min-width: 88px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  height: 38px;
+  margin: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.main-search-btn:hover {
+  background: #174ef5;
+  transform: translateY(-1px);
+}
+
+/* 본문 레이아웃 */
+.page-body {
+  display: grid;
+  grid-template-columns: 2.1fr 1.1fr;
+  gap: 24px;
+  padding: 12px 56px 40px;
+}
+
+/* 좌측 영역 */
+.left-panel {
+  background: rgba(4, 16, 60, 0.95);
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 18px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 하위 검색 인풋 */
+.sub-search-form {
+  display: flex;
+  background: #0a1c50;
+  border-radius: 999px;
+  padding: 3px;
+  margin-bottom: 16px;
+}
+
+.sub-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #e4ebff;
+  padding: 10px 16px;
+  font-size: 14px;
+  outline: none;
+}
+
+.sub-search-input::placeholder {
+  color: #6e7cc0;
+}
+
+.sub-search-btn {
+  min-width: 72px;
+  border: none;
+  border-radius: 999px;
+  background: #20356b;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.sub-search-btn:hover {
+  background: #2d4a97;
+}
+
+.result-summary {
+  font-size: 13px;
+  color: var(--text-sub);
+  margin-bottom: 10px;
+}
+
+.result-count {
+  color: #63b0ff;
+  font-weight: 600;
+}
+
+/* 그리드 헤더 */
+.grid-header {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1.6fr) 100px 150px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #8b96d0;
+  border-radius: var(--radius-md);
+  background: rgba(9, 28, 76, 0.9);
+  border: 1px solid rgba(57, 77, 134, 0.9);
+}
+
+.col-no,
+.col-addr,
+.col-zip,
+.col-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* 그리드 바디 */
+.grid-body {
+  margin-top: 6px;
+  background: rgba(5, 17, 58, 0.95);
+  border-radius: var(--radius-md);
+  border: 1px solid #1f2f5f;
+  overflow: hidden;
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1.6fr) 100px 150px;
+  padding: 14px 14px;
+  font-size: 13px;
+  border-top: 1px solid #1b2854;
+}
+
+.grid-row:first-child {
+  border-top: none;
+}
+
+.grid-row:nth-child(2n) {
+  background: rgba(9, 24, 71, 0.9);
+}
+
+.cell-no {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9aacd9;
+  font-weight: 500;
+}
+
+.cell-addr {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  row-gap: 4px;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.addr-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #1f356d;
+  color: #cad5ff;
+}
+
+.addr-type.alt {
+  background: #273f87;
+}
+
+.addr-text {
+  color: #ecf1ff;
+  font-size: 13px;
+}
+
+.cell-zip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #f3f4ff;
+}
+
+.cell-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-outline {
+  min-width: 70px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #3a4f9f;
+  background: transparent;
+  color: #d6e1ff;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.btn-outline:hover {
+  background: rgba(61, 98, 196, 0.2);
+  border-color: #5f83ff;
+}
+
+.no-result {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+/* 페이징 */
+.pagination {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.pg-btn {
+  border: none;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  color: #a5b1e4;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.pg-btn:hover:not(:disabled) {
+  background: #24376d;
+  transform: translateY(-1px);
+}
+
+.pg-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.pg-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* 우측 지도 영역 */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-container {
+  flex: 1;
+  background: rgba(4, 16, 60, 0.95);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: 14px;
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 20% 20%, #203f7e, #020824);
+  border: 1px solid #2d3c70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9fb4ff;
+  font-size: 14px;
+}
+
+.map-main-btn {
+  border: none;
+  border-radius: 18px;
+  padding: 14px 18px;
+  background: #000000;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  transition: transform var(--transition-fast),
+    box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.map-main-btn:hover {
+  transform: translateY(-2px);
+  background: #141414;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.75);
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+  .page-body {
+    grid-template-columns: 1fr;
+  }
+  .right-panel {
+    order: -1;
+  }
+}
