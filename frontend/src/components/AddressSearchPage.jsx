@@ -21,13 +21,15 @@ export default function AddressSearchPage() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const pageData = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const [isDark, setIsDark] = useState(true);
+
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
   };
 
   return (
-    <div className="page-root">
+    <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
       <header className="page-header">
         <div className="header-logo">LOGO</div>
         <div className="header-search">
@@ -44,6 +46,17 @@ export default function AddressSearchPage() {
           </form>
         </div>
       </header>
+
+      <div className="theme-toggle">
+        <label>
+          <input
+            type="checkbox"
+            checked={isDark}
+            onChange={() => setIsDark((v) => !v)}
+          />
+          다크 모드
+        </label>
+      </div>
 
       <main className="page-body">
         {/* 좌측 검색/그리드 영역 */}

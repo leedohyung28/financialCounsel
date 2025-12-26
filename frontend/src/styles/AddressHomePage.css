@@ -1,17 +1,55 @@
+@import "./LoginPage.css";
+
 :root {
-  --home-bg-main: #f2f5fb;
-  --home-blue-dark: #081b4e;
-  --home-blue-mid: #122a73;
-  --home-blue-light: #1b3a97;
-  --home-input-bg: #ffffff;
-  --home-border-soft: #d6dcee;
-  --home-text-main: #ffffff;
-  --home-text-sub: #7c86a8;
+  /* 공통 레이아웃 */
   --home-radius-lg: 26px;
   --home-radius-md: 18px;
   --home-radius-sm: 999px;
   --home-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.2);
   --home-font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --home-transition: 0.15s ease-out;
+}
+
+/* 라이트 모드 (기존 디자인 유지) */
+.theme-light {
+  --home-bg-page: #f2f5fb;
+
+  --home-panel-bg: #081b4e; /* 짙은 네이비 박스 */
+  --home-form-bg: #122a73; /* 검색 폼 배경 */
+  --home-btn-bg: #1b3a97; /* 검색 버튼 배경 */
+  --home-btn-hover: #2347b5;
+
+  --home-input-bg: #ffffff;
+  --home-input-text: #222222;
+  --home-input-ph: #9aa3bf;
+
+  --home-text-main: #ffffff; /* 패널 내부 텍스트 */
+  --home-text-sub: #7c86a8; /* 옵션 텍스트 */
+
+  --home-map-btn-bg: #000000;
+  --home-map-btn-hover: #151515;
+  --home-map-text: #ffffff;
+}
+
+/* 다크 모드 (LoginPage 다크 테마와 조화되도록 변경) */
+.theme-dark {
+  --home-bg-page: #202124; /* 전체 배경 어둡게 */
+
+  --home-panel-bg: #171717; /* 카드 배경 어둡게 (LoginPage 카드와 유사) */
+  --home-form-bg: #303134; /* 검색 폼 배경 조금 밝게 */
+  --home-btn-bg: #8ab4f8; /* 버튼 색상 (Google Blue 계열) */
+  --home-btn-hover: #aecbfa;
+
+  --home-input-bg: #202124; /* 인풋 배경 */
+  --home-input-text: #e8eaed; /* 인풋 텍스트 */
+  --home-input-ph: #9aa0a6;
+
+  --home-text-main: #e8eaed;
+  --home-text-sub: #9aa0a6;
+
+  --home-map-btn-bg: #303134; /* 지도 버튼도 다크 회색 */
+  --home-map-btn-hover: #3c4043;
+  --home-map-text: #e8eaed;
 }
 
 * {
@@ -20,12 +58,13 @@
 
 .home-root {
   min-height: 100vh;
-  background: var(--home-bg-main);
+  background: var(--home-bg-page);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 32px 16px;
   font-family: var(--home-font);
+  transition: background 0.3s ease;
 }
 
 .home-inner {
@@ -38,10 +77,11 @@
 
 /* 검색 영역 전체 박스 */
 .home-search-section {
-  background: var(--home-blue-dark);
+  background: var(--home-panel-bg);
   border-radius: var(--home-radius-lg);
   padding: 12px 18px 10px;
   box-shadow: var(--home-shadow-soft);
+  transition: background 0.3s ease;
 }
 
 /* 상단 검색 폼 */
@@ -49,7 +89,7 @@
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr) 46px 86px;
   align-items: center;
-  background: var(--home-blue-mid);
+  background: var(--home-form-bg);
   border-radius: var(--home-radius-sm);
   padding: 4px;
 }
@@ -57,7 +97,7 @@
 .home-search-icon {
   border: none;
   background: transparent;
-  color: #ffffff;
+  color: var(--home-text-main);
   font-size: 18px;
   display: flex;
   align-items: center;
@@ -72,15 +112,15 @@
   padding: 12px 18px;
   font-size: 14px;
   outline: none;
-  color: #222;
+  color: var(--home-input-text);
 }
 
 .home-search-input::placeholder {
-  color: #9aa3bf;
+  color: var(--home-input-ph);
 }
 
 .home-search-select {
-  color: #ffffff;
+  color: var(--home-text-main);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,17 +129,24 @@
 
 .home-search-btn {
   border: none;
-  background: var(--home-blue-light);
-  color: #ffffff;
+  background: var(--home-btn-bg);
+  color: #ffffff; /* 버튼 텍스트는 항상 흰색 유지하거나 다크모드에서 조정 */
   border-radius: 999px;
   height: 40px;
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.15s ease-out, transform 0.15s ease-out;
+  transition: background var(--home-transition),
+    transform var(--home-transition);
+}
+
+/* 다크모드일 때 버튼 텍스트 색상 조정 (배경이 밝은 파랑이라 검은 글씨가 나을 수 있음) */
+.theme-dark .home-search-btn {
+  color: #202124;
+  font-weight: 500;
 }
 
 .home-search-btn:hover {
-  background: #2347b5;
+  background: var(--home-btn-hover);
   transform: translateY(-1px);
 }
 
@@ -139,10 +186,10 @@
   width: 100%;
   height: 100%;
   min-height: 102px;
-  background: #000000;
+  background: var(--home-map-btn-bg);
   border-radius: 24px;
   border: none;
-  color: #ffffff;
+  color: var(--home-map-text);
   display: grid;
   grid-template-columns: 60px minmax(0, 1fr);
   align-items: center;
@@ -150,13 +197,13 @@
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
   cursor: pointer;
   text-align: left;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
-    background 0.15s ease-out;
+  transition: transform var(--home-transition),
+    box-shadow var(--home-transition), background var(--home-transition);
 }
 
 .home-map-button:hover {
   transform: translateY(-2px);
-  background: #151515;
+  background: var(--home-map-btn-hover);
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.7);
 }
 

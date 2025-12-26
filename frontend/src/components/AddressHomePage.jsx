@@ -4,6 +4,8 @@ import "../styles/AddressHomePage.css";
 export default function AddressHomePage({ onSearchClick, onMapClick }) {
   const [keyword, setKeyword] = useState("");
 
+  const [isDark, setIsDark] = useState(true);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (onSearchClick) {
@@ -12,7 +14,18 @@ export default function AddressHomePage({ onSearchClick, onMapClick }) {
   };
 
   return (
-    <div className="home-root">
+    <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
+      <div className="theme-toggle">
+        <label>
+          <input
+            type="checkbox"
+            checked={isDark}
+            onChange={() => setIsDark((v) => !v)}
+          />
+          다크 모드
+        </label>
+      </div>
+
       <div className="home-inner">
         {/* 상단 큰 검색 영역 */}
         <section className="home-search-section">
