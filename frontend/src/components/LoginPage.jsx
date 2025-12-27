@@ -1,20 +1,14 @@
 // LoginPage.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 import "../styles/PasswordPage.css";
 import { useTheme } from "../context/ThemeContext";
+import { useNavigation } from "../hooks/useNavigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-
-  const moveToSignUp = () => {
-    navigate("../SignUpPage");
-  };
-  const moveToFindAccount = () => {
-    navigate("../FindAccountPage");
-  };
-
+  const { goToFindAccount, goToSignUp } = useNavigation();
   const { isDark, toggleTheme } = useTheme();
 
   // 로그인 단계 관리 (1: 이메일, 2: 비밀번호)
@@ -22,6 +16,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // '다음' 또는 '로그인' 버튼 클릭 핸들러
   const handleNextStep = () => {
@@ -99,7 +94,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="link-btn"
-                onClick={moveToFindAccount}
+                onClick={goToFindAccount}
               >
                 이메일을 잊으셨나요?
               </button>
@@ -110,26 +105,30 @@ export default function LoginPage() {
               <label className="field-label" htmlFor="password">
                 비밀번호
               </label>
-              <input
-                id="password"
-                type="password"
-                className="field-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={handleKeyDown}
-                autoFocus
-              />
-              <div className="show-pw-toggle">
+              <div className="password-wrapper">
                 <input
-                  type="checkbox"
-                  id="showPw"
-                  onClick={() => {
-                    const input = document.getElementById("password");
-                    input.type =
-                      input.type === "password" ? "text" : "password";
-                  }}
+                  id="password"
+                  type={showPassword ? "text" : "password"} // 상태에 따라 타입 변경
+                  className="field-input password-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  autoFocus
                 />
-                <label htmlFor="showPw">비밀번호 표시</label>
+                <button
+                  type="button"
+                  className="password-toggle-icon"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={
+                    showPassword ? "비밀번호 숨기기" : "비밀번호 표시"
+                  }
+                >
+                  {showPassword ? (
+                    <FontAwesomeIcon icon={faEye} />
+                  ) : (
+                    <FontAwesomeIcon icon={faEyeSlash} />
+                  )}{" "}
+                </button>
               </div>
             </>
           )}
@@ -137,7 +136,7 @@ export default function LoginPage() {
 
         <div className="actions-bottom">
           {step === 1 ? (
-            <button type="button" className="link-btn" onClick={moveToSignUp}>
+            <button type="button" className="link-btn" onClick={goToSignUp}>
               계정 만들기
             </button>
           ) : (

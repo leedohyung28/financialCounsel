@@ -4,16 +4,15 @@ import "../styles/SignUpPage.css";
 import "../styles/SignUpComplete.css";
 import "../styles/PhoneCertify.css";
 import "react-datepicker/dist/react-datepicker.css";
-import { useNavigate } from "react-router-dom";
 import "./common/PhoneAuth";
 import PhoneAuth from "./common/PhoneAuth";
 import { formatTime, handleVerifyOtp } from "../context/PhoneAuth";
 import { useTheme } from "../context/ThemeContext";
+import { useNavigation } from "../hooks/useNavigation";
 
 export default function SignupPage() {
-  const navigate = useNavigate();
-
   const { isDark, toggleTheme } = useTheme();
+  const { goToLogin } = useNavigation();
   const [isCompleted, setIsCompleted] = useState(false);
   const [step, setStep] = useState(1); // 1: 정보입력, 2: 전화번호인증
 
@@ -57,8 +56,6 @@ export default function SignupPage() {
       birth: date ? date.toISOString().split("T")[0] : "",
     }));
   };
-
-  const moveToLogin = () => navigate("../LoginPage");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const pwRegex =
@@ -109,7 +106,7 @@ export default function SignupPage() {
             </p>
             <div className="actions-bottom">
               <div></div>
-              <button className="complete-login-btn" onClick={moveToLogin}>
+              <button className="complete-login-btn" onClick={goToLogin}>
                 로그인
               </button>
             </div>
@@ -220,7 +217,7 @@ export default function SignupPage() {
               </div>
             </form>
             <div className="actions-bottom">
-              <button className="link-btn" onClick={moveToLogin}>
+              <button className="link-btn" onClick={goToLogin}>
                 로그인하기
               </button>
               <button className="primary-btn" onClick={handleNextStep}>

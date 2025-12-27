@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 import PhoneAuth from "./common/PhoneAuth";
 import { formatTime, handleVerifyOtp } from "../context/PhoneAuth";
 import { useTheme } from "../context/ThemeContext";
-// 필요하다면 PhoneCertify.css도 import (signup 때 쓴 스타일 재사용)
+import { useNavigation } from "../hooks/useNavigation";
 
 export default function FindAccountPage() {
-  const navigate = useNavigate();
+  const { goToLogin } = useNavigation();
   const { isDark, toggleTheme } = useTheme();
 
   // 단계 관리: 1(아이디 입력) -> 2(전화번호 인증) -> 3(완료)
@@ -85,6 +84,17 @@ export default function FindAccountPage() {
     setStep(3);
   };
 
+  const handleCancel = () => {
+    if (step === 2) {
+      setStep(1);
+      // 이전에 말씀드린 상태 초기화 로직을 여기 넣으면 완벽합니다.
+      setIsOtpSent(false);
+      setForm({ phone: "", otp: "" });
+    } else {
+      goToLogin();
+    }
+  };
+
   return (
     <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
       <div className="theme-toggle">
@@ -112,10 +122,7 @@ export default function FindAccountPage() {
               className="actions-bottom"
               style={{ justifyContent: "flex-end" }}
             >
-              <button
-                className="primary-btn"
-                onClick={() => navigate("../LoginPage")}
-              >
+              <button className="primary-btn" onClick={goToLogin}>
                 로그인으로 돌아가기
               </button>
             </div>
@@ -151,7 +158,6 @@ export default function FindAccountPage() {
                       placeholder="example@domain.com"
                     />
                   </div>
-                  {/* 아이디 확인 버튼 */}
                   <button className="primary-btn" onClick={handleCheckUser}>
                     확인
                   </button>
@@ -188,14 +194,7 @@ export default function FindAccountPage() {
               className="actions-bottom"
               style={{ justifyContent: "space-between" }}
             >
-              <button
-                type="button"
-                className="link-btn"
-                onClick={() => {
-                  if (step === 2) setStep(1);
-                  else navigate("../LoginPage");
-                }}
-              >
+              <button type="button" className="link-btn" onClick={handleCancel}>
                 {step === 2 ? "이전으로" : "취소"}
               </button>
 
