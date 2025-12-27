@@ -5,7 +5,6 @@ export const handleVerifyOtp = (timer, otp, setIsCompleted) => {
     return;
   }
   if (otp === "000000") {
-    // 예시 번호
     setIsCompleted(true);
   } else {
     alert("인증번호가 일치하지 않습니다.");

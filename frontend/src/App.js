@@ -6,18 +6,21 @@ import LoginPage from "./components/LoginPage";
 import SignUpPage from "./components/SignUpPage";
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/LoginPage" element={<LoginPage />} />
-        <Route path="/SignUpPage" element={<SignUpPage />} />
-        <Route path="/AddressSearchPage" element={<AddressSearchPage />} />
-        <Route path="/AddressHomePage" element={<AddressHomePage />} />
-        <Route path="/FindAccountPage" element={<FindAccountPage />} />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/LoginPage" element={<LoginPage />} />
+          <Route path="/SignUpPage" element={<SignUpPage />} />
+          <Route path="/AddressSearchPage" element={<AddressSearchPage />} />
+          <Route path="/AddressHomePage" element={<AddressHomePage />} />
+          <Route path="/FindAccountPage" element={<FindAccountPage />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

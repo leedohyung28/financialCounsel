@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 import "../styles/PasswordPage.css";
+import { useTheme } from "../context/ThemeContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function LoginPage() {
     navigate("../FindAccountPage");
   };
 
-  const [isDark, setIsDark] = useState(true);
+  const { isDark, toggleTheme } = useTheme();
 
   // 로그인 단계 관리 (1: 이메일, 2: 비밀번호)
   const [step, setStep] = useState(1);
@@ -58,11 +59,7 @@ export default function LoginPage() {
           {isDark ? "다크 모드" : "라이트 모드"}
         </span>
         <label className="switch">
-          <input
-            type="checkbox"
-            checked={isDark}
-            onChange={() => setIsDark((v) => !v)}
-          />
+          <input type="checkbox" checked={isDark} onChange={toggleTheme} />
           <span className="slider"></span>
         </label>
       </div>

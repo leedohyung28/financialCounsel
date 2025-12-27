@@ -1,6 +1,7 @@
 // AddressSearchPage.jsx
 import React, { useState } from "react";
 import "../styles/AddressSearchPage.css";
+import { useTheme } from "../context/ThemeContext";
 
 const mockData = Array.from({ length: 37 }).map((_, i) => ({
   id: i + 1,
@@ -21,7 +22,7 @@ export default function AddressSearchPage() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const pageData = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const [isDark, setIsDark] = useState(true);
+  const { isDark, toggleTheme } = useTheme();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -52,11 +53,7 @@ export default function AddressSearchPage() {
           {isDark ? "다크 모드" : "라이트 모드"}
         </span>
         <label className="switch">
-          <input
-            type="checkbox"
-            checked={isDark}
-            onChange={() => setIsDark((v) => !v)}
-          />
+          <input type="checkbox" checked={isDark} onChange={toggleTheme} />
           <span className="slider"></span>
         </label>
       </div>

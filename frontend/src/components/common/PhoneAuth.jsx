@@ -2,10 +2,8 @@
 import React from "react";
 
 export default function PhoneAuth({
-  phone,
-  otp,
-  onPhoneChange,
-  onOtpChange,
+  form,
+  onChange,
   isOtpSent,
   handleSendOtp,
   handleVerifyOtp,
@@ -14,15 +12,15 @@ export default function PhoneAuth({
 }) {
   return (
     <div className="auth-form">
-      <div className="field-group">
+      <div className="field-group animate-fade-in">
         <label className="field-label">전화번호</label>
         <div className="input-with-btn">
           <input
             name="phone"
             className="field-input"
             placeholder="010-0000-0000"
-            value={phone}
-            onChange={onPhoneChange}
+            value={form.phone}
+            onChange={onChange}
             disabled={isOtpSent}
           />
           <button className="secondary-btn" onClick={handleSendOtp}>
@@ -32,10 +30,7 @@ export default function PhoneAuth({
       </div>
 
       {isOtpSent && (
-        <div
-          className="field-group animate-fade-in"
-          style={{ marginTop: "20px" }}
-        >
+        <div className="field-group animate-fade-in">
           <label className="field-label">인증번호</label>
           <div className="input-with-btn">
             <div style={{ position: "relative", flex: 1 }}>
@@ -43,8 +38,8 @@ export default function PhoneAuth({
                 name="otp"
                 className="field-input"
                 placeholder="6자리 입력"
-                value={otp}
-                onChange={onOtpChange}
+                value={form.otp}
+                onChange={onChange}
                 style={{ width: "100%" }}
               />
               <span className="timer-text">{formatTime(timer)}</span>

@@ -7,12 +7,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
 import "./common/PhoneAuth";
 import PhoneAuth from "./common/PhoneAuth";
-import { formatTime, handleVerifyOtp } from "../services/PhoneAuth";
+import { formatTime, handleVerifyOtp } from "../context/PhoneAuth";
+import { useTheme } from "../context/ThemeContext";
 
 export default function SignupPage() {
   const navigate = useNavigate();
 
-  const [isDark, setIsDark] = useState(true);
+  const { isDark, toggleTheme } = useTheme();
   const [isCompleted, setIsCompleted] = useState(false);
   const [step, setStep] = useState(1); // 1: 정보입력, 2: 전화번호인증
 
@@ -94,18 +95,13 @@ export default function SignupPage() {
           {isDark ? "다크 모드" : "라이트 모드"}
         </span>
         <label className="switch">
-          <input
-            type="checkbox"
-            checked={isDark}
-            onChange={() => setIsDark((v) => !v)}
-          />
+          <input type="checkbox" checked={isDark} onChange={toggleTheme} />
           <span className="slider"></span>
         </label>
       </div>
 
       <div className="signup-card">
         {isCompleted ? (
-          /* 3) 완료 화면 */
           <div className="signup-complete-content">
             <h1 className="complete-title">회원가입이 완료되었습니다</h1>
             <p className="complete-message">
@@ -242,13 +238,13 @@ export default function SignupPage() {
               </div>
             </div>
             <PhoneAuth
-              phone={form.phone}
-              otp={form.otp}
-              onPhoneChange={onChange}
-              onOtpChange={onChange}
+              form={form}
+              onChange={onChange}
               isOtpSent={isOtpSent}
               handleSendOtp={handleSendOtp}
-              handleVerifyOtp={handleVerifyOtp(timer, form.otp, setIsCompleted)}
+              handleVerifyOtp={() =>
+                handleVerifyOtp(timer, form.otp, setIsCompleted)
+              }
               timer={timer}
               formatTime={formatTime}
             />

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import "../styles/AddressHomePage.css";
+import { useTheme } from "../context/ThemeContext";
 
 export default function AddressHomePage({ onSearchClick, onMapClick }) {
   const [keyword, setKeyword] = useState("");
 
-  const [isDark, setIsDark] = useState(true);
+  const { isDark, toggleTheme } = useTheme();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,11 +21,7 @@ export default function AddressHomePage({ onSearchClick, onMapClick }) {
           {isDark ? "다크 모드" : "라이트 모드"}
         </span>
         <label className="switch">
-          <input
-            type="checkbox"
-            checked={isDark}
-            onChange={() => setIsDark((v) => !v)}
-          />
+          <input type="checkbox" checked={isDark} onChange={toggleTheme} />
           <span className="slider"></span>
         </label>
       </div>

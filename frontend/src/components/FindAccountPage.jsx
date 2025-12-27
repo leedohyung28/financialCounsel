@@ -2,20 +2,23 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 import PhoneAuth from "./common/PhoneAuth";
-import { formatTime, handleVerifyOtp } from "../services/PhoneAuth";
+import { formatTime, handleVerifyOtp } from "../context/PhoneAuth";
+import { useTheme } from "../context/ThemeContext";
 // 필요하다면 PhoneCertify.css도 import (signup 때 쓴 스타일 재사용)
 
 export default function FindAccountPage() {
   const navigate = useNavigate();
-  const [isDark, setIsDark] = useState(true);
+  const { isDark, toggleTheme } = useTheme();
 
   // 단계 관리: 1(아이디 입력) -> 2(전화번호 인증) -> 3(완료)
   const [step, setStep] = useState(1);
 
   // 폼 데이터
   const [userId, setUserId] = useState("");
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
+  const [form, setForm] = useState({
+    phone: "",
+    otp: "",
+  });
 
   // 인증 관련 상태
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -35,14 +38,9 @@ export default function FindAccountPage() {
     return () => clearInterval(interval);
   }, [isOtpSent, timer]);
 
-  const onPhoneChange = (e) => {
+  const onChange = (e) => {
     const { name, value } = e.target;
-    setPhone((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const onOtpChange = (e) => {
-    const { name, value } = e.target;
-    setOtp((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   // 1단계 -> 2단계 이동
@@ -53,12 +51,16 @@ export default function FindAccountPage() {
     }
     // TODO: 서버에 아이디 존재 여부 확인 로직
     console.log("아이디 확인:", userId);
+    setIsOtpSent(false);
+    setTimer(180);
+    setForm({ phone: "", otp: "" });
+
     setStep(2);
   };
 
   // 인증번호 전송
   const handleSendOtp = () => {
-    if (!phone.trim()) {
+    if (!form.phone.trim()) {
       alert("전화번호를 입력해주세요.");
       return;
     }
@@ -73,36 +75,30 @@ export default function FindAccountPage() {
       alert("인증 시간이 만료되었습니다. 다시 시도해주세요.");
       return;
     }
-    if (otp !== "000000") {
+    if (form.otp !== "000000") {
       alert("인증번호가 일치하지 않습니다.");
       return;
     }
 
     // TODO: 실제 이메일 발송 API 호출
-    console.log(`이메일 발송 요청: ${userId}, ${phone}`);
+    console.log(`이메일 발송 요청: ${userId}, ${form.phone}`);
     setStep(3);
   };
 
   return (
     <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
-      {/* 테마 토글 (LoginPage와 동일) */}
       <div className="theme-toggle">
         <span className="toggle-label">
           {isDark ? "다크 모드" : "라이트 모드"}
         </span>
         <label className="switch">
-          <input
-            type="checkbox"
-            checked={isDark}
-            onChange={() => setIsDark((v) => !v)}
-          />
+          <input type="checkbox" checked={isDark} onChange={toggleTheme} />
           <span className="slider"></span>
         </label>
       </div>
 
       <div className="login-card">
-        {step === 3 ? (
-          /* STEP 3: 완료 화면 */
+        {isCompleted ? (
           <div className="signup-complete-content">
             <h1 className="title-main" style={{ marginBottom: "16px" }}>
               이메일 발송 완료
@@ -164,7 +160,6 @@ export default function FindAccountPage() {
 
               {step === 2 && (
                 <div className="auth-form">
-                  {/* 아이디 표시 (읽기 전용) */}
                   <div className="field-group">
                     <label className="field-label">아이디</label>
                     <input
@@ -175,17 +170,13 @@ export default function FindAccountPage() {
                     />
                   </div>
                   <PhoneAuth
-                    phone={phone}
-                    otp={otp}
-                    onPhoneChange={onPhoneChange}
-                    onOtpChange={onOtpChange}
+                    form={form}
+                    onChange={onChange}
                     isOtpSent={isOtpSent}
                     handleSendOtp={handleSendOtp}
-                    handleVerifyOtp={handleVerifyOtp(
-                      timer,
-                      otp,
-                      setIsCompleted
-                    )}
+                    handleVerifyOtp={() =>
+                      handleVerifyOtp(timer, form.otp, setIsCompleted)
+                    }
                     timer={timer}
                     formatTime={formatTime}
                   />
@@ -222,8 +213,18 @@ export default function FindAccountPage() {
         )}
       </div>
 
-      {/* Footer는 LoginPage와 동일하게 */}
-      <footer className="footer">{/* ... 생략 (LoginPage 복사) */}</footer>
+      <footer className="footer">
+        <select className="footer-select" defaultValue="ko">
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+        </select>
+        <div className="footer-links">
+          <button className="footer-link">도움말</button>
+          <button className="footer-link">개인정보처리방침</button>
+          <button className="footer-link">약관</button>
+        </div>
+      </footer>
     </div>
   );
 }
