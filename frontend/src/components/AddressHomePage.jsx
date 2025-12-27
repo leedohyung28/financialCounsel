@@ -16,13 +16,16 @@ export default function AddressHomePage({ onSearchClick, onMapClick }) {
   return (
     <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
       <div className="theme-toggle">
-        <label>
+        <span className="toggle-label">
+          {isDark ? "다크 모드" : "라이트 모드"}
+        </span>
+        <label className="switch">
           <input
             type="checkbox"
             checked={isDark}
             onChange={() => setIsDark((v) => !v)}
           />
-          다크 모드
+          <span className="slider"></span>
         </label>
       </div>
 

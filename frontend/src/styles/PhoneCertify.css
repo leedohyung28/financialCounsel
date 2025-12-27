@@ -1,0 +1,51 @@
+/* 전화번호 인증 관련 추가 스타일 */
+
+.input-with-btn {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.input-with-btn .field-input {
+  flex: 1;
+}
+
+.secondary-btn {
+  padding: 10px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.secondary-btn:hover {
+  background-color: rgba(26, 115, 232, 0.1);
+}
+
+.timer-text {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

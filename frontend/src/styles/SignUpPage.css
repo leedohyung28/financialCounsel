@@ -1,10 +1,10 @@
 @import "./LoginPage.css";
 
-/* Signup 전용 오버라이드 */
-
 .signup-card {
-  width: 720px; /* 로그인 카드보다 가로로 더 길게 */
+  width: 720px;
   max-width: 96vw;
+  height: 450px;
+  max-height: 60vw;
   padding: 40px 40px 32px;
   border-radius: 8px;
   box-sizing: border-box;
@@ -124,6 +124,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: auto;
 }
 
 .link-btn {
@@ -153,4 +154,71 @@
 
 .primary-btn:hover {
   background-color: var(--primary-hover);
+}
+
+.tooltip-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 툴팁 본체 */
+.tooltip-text {
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px;
+  position: absolute;
+  z-index: 10;
+  bottom: 110%; /* input 위쪽에 표시 */
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 툴팁 화살표 */
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Input 포커스 시 툴팁 표시 */
+.tooltip-container input:focus + .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* 유효성 검사 실패 시 테두리 강조 (선택 사항) */
+.field-input.invalid {
+  border-color: #ff4d4d !important;
+}
+
+#birth {
+  width: 100%;
+  padding: 10px 10px 10px 30px;
+}
+
+.react-datepicker__input-container .react-datepicker__calendar-icon {
+  padding-top: 14px !important;
+}
+
+.theme-light .react-datepicker__close-icon::after {
+  background-color: #afcfe9;
+}
+
+.theme-dark .react-datepicker__close-icon::after {
+  background-color: #3b444b;
 }
