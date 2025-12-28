@@ -54,18 +54,6 @@ export default function AddressSearchPage() {
       <main className="page-body">
         {/* 좌측 검색/그리드 영역 */}
         <section className="left-panel">
-          <form onSubmit={handleSearch} className="sub-search-form">
-            <input
-              className="sub-search-input"
-              placeholder="주소를 입력하세요"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <button className="sub-search-btn" type="submit">
-              검색
-            </button>
-          </form>
-
           <div className="result-summary">
             검색 결과 <span className="result-count">{filtered.length}</span>건
           </div>

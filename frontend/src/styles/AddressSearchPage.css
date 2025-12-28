@@ -89,51 +89,6 @@ body {
   border: 1px solid var(--home-border-soft); /* 테두리도 변수화 */
 }
 
-/* 하위 검색 인풋 */
-.sub-search-form {
-  display: flex;
-  background: var(--home-form-bg);
-  border-radius: 999px;
-  padding: 3px;
-  margin-bottom: 16px;
-  border: 1px solid transparent; /* 레이아웃 유지를 위한 투명 테두리 */
-}
-
-.theme-light .sub-search-form {
-  border-color: var(--home-input-text);
-}
-
-.sub-search-input {
-  flex: 1;
-  border: none;
-  background: var(--home-input-bg);
-  color: var(--home-input-text);
-  padding: 10px 16px;
-  border-radius: var(--home-radius-sm);
-  margin-right: 10px;
-  font-size: 14px;
-  outline: none;
-}
-
-.sub-search-input::placeholder {
-  color: var(--home-text-placeholder);
-}
-
-.sub-search-btn {
-  min-width: 72px;
-  border: none;
-  border-radius: 999px;
-  background: var(--home-btn-bg);
-  color: #ffffff;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.sub-search-btn:hover {
-  filter: brightness(1.1);
-}
-
 .result-summary {
   font-size: 13px;
   color: var(--home-text-sub);
