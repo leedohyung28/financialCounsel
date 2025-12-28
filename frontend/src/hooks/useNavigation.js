@@ -7,6 +7,8 @@ export function useNavigation() {
     goToLogin: () => navigate("/LoginPage"),
     goToSignUp: () => navigate("/SignUpPage"),
     goToFindAccount: () => navigate("/FindAccountPage"),
+    goToAddressHome: () => navigate("/AddressHomePage"),
+    goToAddressSearch: () => navigate("/AddressSearchPage"),
     goBack: () => navigate(-1), // 이전 페이지로
     goToMain: () => navigate("/"),
     // 인자가 필요한 경우

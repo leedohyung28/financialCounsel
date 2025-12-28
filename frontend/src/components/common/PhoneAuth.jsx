@@ -1,6 +1,3 @@
-// components/PhoneAuth.jsx
-import React from "react";
-
 export default function PhoneAuth({
   form,
   onChange,

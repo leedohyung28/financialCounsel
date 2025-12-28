@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import "../styles/AddressSearchPage.css";
 import { useTheme } from "../context/ThemeContext";
+import SearchSection from "./common/SearchSection";
 
 const mockData = Array.from({ length: 37 }).map((_, i) => ({
   id: i + 1,
@@ -15,6 +16,7 @@ const PAGE_SIZE = 5;
 export default function AddressSearchPage() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
 
   const filtered = mockData.filter(
     (item) => item.jibun.includes(query) || item.road.includes(query)
@@ -32,20 +34,11 @@ export default function AddressSearchPage() {
   return (
     <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
       <header className="page-header">
-        <div className="header-logo">LOGO</div>
-        <div className="header-search">
-          <form onSubmit={handleSearch} className="main-search-form">
-            <input
-              className="main-search-input"
-              placeholder="예) 도로명, 건물명, 지번 검색"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <button className="main-search-btn" type="submit">
-              검색
-            </button>
-          </form>
-        </div>
+        <SearchSection
+          handleSubmit={handleSearch}
+          keyword={keyword}
+          setKeyword={setKeyword}
+        />
       </header>
 
       <div className="theme-toggle">

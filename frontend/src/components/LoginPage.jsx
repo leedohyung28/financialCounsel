@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 export default function LoginPage() {
-  const { goToFindAccount, goToSignUp } = useNavigation();
+  const { goToFindAccount, goToSignUp, goToAddressHome } = useNavigation();
   const { isDark, toggleTheme } = useTheme();
 
   // 로그인 단계 관리 (1: 이메일, 2: 비밀번호)
@@ -31,6 +31,7 @@ export default function LoginPage() {
       // 여기서 실제 로그인 API 호출
       console.log("로그인 시도:", { email, password });
       alert(`로그인 시도\nID: ${email}\nPW: ${password}`);
+      goToAddressHome();
     }
   };
 
