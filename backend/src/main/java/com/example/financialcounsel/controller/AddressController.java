@@ -1,6 +1,6 @@
 package com.example.financialcounsel.controller;
 
-import com.example.financialcounsel.domain.Address;
+import com.example.financialcounsel.domain.AddressVO;
 import com.example.financialcounsel.service.AddressService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +18,8 @@ public class AddressController {
     }
 
     @PostMapping
-    public List<Address> selectListAddress(Address formObject) {
-        List<Address> listAddress = addressService.selectListAddress(formObject);
+    public List<AddressVO> selectListAddress(AddressVO formObject) {
+        List<AddressVO> listAddress = addressService.selectListAddress(formObject);
         return listAddress;
     }
 }

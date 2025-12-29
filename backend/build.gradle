@@ -31,3 +31,14 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['backend/src/main/java']
+            resources {
+                srcDirs = ['backend/src/main/resources']
+            }
+        }
+    }
+}
