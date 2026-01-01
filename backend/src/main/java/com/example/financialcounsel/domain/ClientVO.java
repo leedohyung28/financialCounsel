@@ -1,5 +1,7 @@
 package com.example.financialcounsel.domain;
 
+import com.example.financialcounsel.global.annotation.DomainName;
+import com.example.financialcounsel.global.annotation.FieldName;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,76 +11,64 @@ import java.sql.Timestamp;
 @Document(collection = "client")
 @Data
 @NoArgsConstructor
+@DomainName("직원정보")
 public class ClientVO {
     @Id
     private String id;
-    
-    // 직원명
+
     @Setter
     @Getter
-    @NonNull
+    @NonNull @FieldName("직원명")
     private String name;
-    
-    // 이메일
+
     @Getter
     @Setter
-    @NonNull
+    @NonNull @FieldName("이메일")
     private String email;
-    
-    // 패스워드
+
     @Getter
     @Setter
-    @NonNull
+    @NonNull @FieldName("패스워드")
     private String password;
-    
-    // 휴대폰 번호
+
     @Getter
     @Setter
-    @NonNull
+    @NonNull @FieldName("휴대폰 번호")
     private String phoneNum;
 
-    // 성별
     @Getter
-    @Setter
+    @Setter @FieldName("성별")
     private String sex;
 
-    // 위치
     @Getter
-    @Setter
+    @Setter @FieldName("위치")
     private String location;
 
-    // 별명
     @Getter
-    @Setter
+    @Setter @FieldName("별명")
     private String nickname;
 
-    // 프로필사진
     @Getter
-    @Setter
+    @Setter @FieldName("프로필사진")
     private String profileImage;
 
-    // 사용여부
     @Getter
-    @Setter
+    @Setter @FieldName("사용여부")
     private Boolean useYn;
 
-    // 생성 일시
     @Setter
-    @NonNull
+    @NonNull @FieldName("생성 일시")
     private Timestamp createdAt;
 
-    // 생성자 ID
     @Setter
-    @NonNull
+    @NonNull @FieldName("생성자 ID")
     private String createdId;
 
-    // 수정 일시
     @Setter
-    @NonNull
+    @NonNull @FieldName("수정 일시")
     private Timestamp updatedAt;
 
-    // 수정자 ID
     @Setter
-    @NonNull
+    @NonNull @FieldName("수정자 ID")
     private String updatedId;
 }
