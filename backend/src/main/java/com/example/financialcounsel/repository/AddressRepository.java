@@ -7,5 +7,4 @@ import java.util.List;
 
 @org.springframework.stereotype.Repository
 public interface AddressRepository extends MongoRepository<AddressVO, String> {
-    List<AddressVO> selectListAddress(AddressVO addressVO);
 }

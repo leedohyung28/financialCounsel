@@ -1,6 +1,8 @@
 package com.example.financialcounsel.service;
 
 import com.example.financialcounsel.domain.ClientVO;
+import com.example.financialcounsel.dto.client.LoginResponse;
+import com.example.financialcounsel.global.utils.EncryptUtils;
 import com.example.financialcounsel.global.utils.ValidationUtils;
 import com.example.financialcounsel.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,8 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -18,9 +19,7 @@ public class ClientService {
     private final ClientRepository clientRepository;
 
     public List<ClientVO> selectListClient(ClientVO clientVO) {
-        List<ClientVO> clientList = new ArrayList<>();
-
-        return clientList;
+        return clientRepository.findAll();
     }
 
     /**
@@ -31,14 +30,58 @@ public class ClientService {
     @Transactional(readOnly = true)
     public ClientVO selectSingleClient(ClientVO clientVO) {
         // InputVO 검증
-        Assert.notNull(clientVO, "조회할 직원 정보가 없습니다.");
-
         // 직원ID 필수 입력 검증
-        Assert.hasText(clientVO.getId(), "조회할 ID는 필수 값입니다.");
+        ValidationUtils.validateSelectedFields(clientVO, List.of("id"), "조회");
 
         return clientRepository.findById(clientVO.getId()).orElse(null);
     }
-    
+
+    /**
+     * 직원 단건 조회 (이메일)
+     * @param clientVO 조회 할 직원의 ID
+     * @return ClientVO 객체
+     */
+    @Transactional(readOnly = true)
+    public LoginResponse selectSingleClientByEmail(ClientVO clientVO) {
+        // InputVO, 직원이메일 필수 입력 검증
+        ValidationUtils.validateSelectedFields(clientVO, List.of("email"), "조회");
+
+        return clientRepository.findByEmail(clientVO.getEmail())
+                .map(found -> {
+                        // [코드 0] Client 확인
+                        return LoginResponse.of(0, "client found");
+                })
+                // [코드 9] Client 실패
+                .orElseGet(() -> LoginResponse.of(9, "존재하지 않는 이메일입니다."));
+    }
+
+    /**
+     * 직원 로그인 확인
+     * @param clientVO 조회 할 직원의 ID
+     * @return 결과 코드와 메시지를 포함한 Map
+     */
+    @Transactional(readOnly = true)
+    public LoginResponse loginClient(ClientVO clientVO) {
+        // InputVO, 직원ID, 비밀번호 필수 입력 검증
+        ValidationUtils.validateSelectedFields(clientVO, List.of("email", "password"), "조회");
+
+        // 비밀번호 암호화
+        String encryptedInputPassword = EncryptUtils.encryptPassword(clientVO.getPassword());
+
+        return clientRepository.findByEmail(clientVO.getEmail())
+                .map(found -> {
+                    if (found.getPassword().equals(encryptedInputPassword)) {
+                        // [코드 0] 로그인 성공
+                        return LoginResponse.of(0, "login success");
+                    } else {
+                        // [코드 1] 이메일은 있지만 비밀번호가 다른 경우
+                        return LoginResponse.of(1, "로그인에 실패했습니다.");
+                    }
+                })
+                // [코드 9] 해당하는 email이 존재하지 않는 경우
+                .orElseGet(() -> LoginResponse.of(9, "존재하지 않는 이메일입니다."));
+    }
+
     /**
      *
      * 직원 등록 (Insert)
@@ -51,10 +94,6 @@ public class ClientService {
 
         // 직원명 필수 입력 검증
         ValidationUtils.validateNonNullFields(clientVO, "등록");
-        // TODO : NonNull 추출해서 필수 확인 할 수 있지 않을까..?
-//        Assert.hasText(clientVO.getName(), "등록할 ID는 필수 값입니다.");
-//        Assert.hasText(clientVO.getEmail(), "등록할 이메일는 필수 값입니다.");
-//        Assert.hasText(clientVO.getPassword(), "등록할 패스워드는 필수 값입니다.");
 
         // TODO : 이메일 중복 여부 확인 메서드
         

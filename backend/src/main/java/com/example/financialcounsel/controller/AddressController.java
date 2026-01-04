@@ -11,15 +11,4 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/address")
 public class AddressController {
-    private final AddressService addressService;
-
-    public AddressController(AddressService addressService) {
-        this.addressService = addressService;
     }
-
-    @PostMapping
-    public List<AddressVO> selectListAddress(AddressVO formObject) {
-        List<AddressVO> listAddress = addressService.selectListAddress(formObject);
-        return listAddress;
-    }
-}

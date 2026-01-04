@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-public class EntrypUtils {
+public class EncryptUtils {
     public static String encryptPassword(String plainPassword) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
