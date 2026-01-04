@@ -1,13 +1,15 @@
 // [인증] 버튼 -> 최종 완료
-export const handleVerifyOtp = (timer, otp, setIsCompleted) => {
+export const handleVerifyOtp = async (timer, otp, setIsCompleted) => {
   if (timer === 0) {
     alert("인증 시간이 만료되었습니다. 다시 시도해주세요.");
-    return;
+    return false;
   }
+
   if (otp === "000000") {
-    setIsCompleted(true);
+    return true;
   } else {
     alert("인증번호가 일치하지 않습니다.");
+    return false;
   }
 };
 

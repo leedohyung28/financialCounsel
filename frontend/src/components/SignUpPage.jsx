@@ -9,6 +9,9 @@ import PhoneAuth from "./common/PhoneAuth";
 import { formatTime, handleVerifyOtp } from "../context/PhoneAuth";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../hooks/useNavigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCamera } from "@fortawesome/free-solid-svg-icons";
+import api from "../utils/axios";
 
 export default function SignupPage() {
   const { isDark, toggleTheme } = useTheme();
@@ -25,11 +28,13 @@ export default function SignupPage() {
     password: "",
     phone: "",
     otp: "",
+    profileImage: null,
   });
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [timer, setTimer] = useState(180); // 3분 (180초)
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   // 타이머 기능
   useEffect(() => {
@@ -55,6 +60,22 @@ export default function SignupPage() {
       ...prev,
       birth: date ? date.toISOString().split("T")[0] : "",
     }));
+  };
+
+  // 이미지 변경 핸들러
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // 1. 파일 객체를 form에 저장
+      setForm((prev) => ({ ...prev, profileImage: file }));
+
+      // 2. 브라우저 미리보기 URL 생성
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -85,6 +106,61 @@ export default function SignupPage() {
     alert("인증번호가 발송되었습니다.");
   };
 
+  // [최종 가입 요청] 함수 추가
+  const handleSignupSubmit = async () => {
+    try {
+      // 파일 전송을 위해 FormData 객체 생성
+      const formData = new FormData();
+
+      // 일반 폼 필드 추가
+      Object.keys(form).forEach((key) => {
+        if (key !== "profileImage") {
+          formData.append(key, form[key]);
+        }
+      });
+
+      // 프로필 이미지 파일이 있다면 추가
+      if (form.profileImage) {
+        formData.append("profileImage", form.profileImage);
+      }
+
+      // API 호출 (multipart/form-data)
+      const response = await api.post("/api/client/signup", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.status === 200 || response.data.resultCode === 0) {
+        setIsCompleted(true); // 가입 완료 화면으로 전환
+      } else {
+        alert(response.data.message || "회원가입에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Signup Error:", error);
+      alert("서버 통신 중 오류가 발생했습니다.");
+    }
+  };
+
+  // [인증 확인 핸들러] 수정
+  const onVerifyOtp = async () => {
+    // 1. 먼저 OTP 번호가 입력되었는지 확인
+    if (!form.otp) {
+      alert("인증번호를 입력해주세요.");
+      return;
+    }
+
+    // 인증 시도 (기존 handleVerifyOtp 로직 활용)
+    const isSuccess = await handleVerifyOtp(timer, form.otp, () => {});
+
+    if (isSuccess) {
+      alert("인증에 성공하였습니다! 회원가입을 완료합니다.");
+      handleSignupSubmit(); // 인증 성공 시 바로 가입 요청
+    } else {
+      alert("인증번호가 일치하지 않거나 시간이 만료되었습니다.");
+    }
+  };
+
   return (
     <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
       <div className="theme-toggle">
@@ -97,7 +173,9 @@ export default function SignupPage() {
         </label>
       </div>
 
-      <div className="signup-card">
+      <div
+        className={`signup-card ${isCompleted ? "completed" : `step-${step}`}`}
+      >
         {isCompleted ? (
           <div className="signup-complete-content">
             <h1 className="complete-title">회원가입이 완료되었습니다</h1>
@@ -118,6 +196,36 @@ export default function SignupPage() {
               <h1 className="title-main">회원가입</h1>
               <div className="title-sub">계정 만들기</div>
             </div>
+
+            <div className="profile-upload-container">
+              <div className="profile-preview-wrapper">
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="profile-preview"
+                  />
+                ) : (
+                  <div className="profile-placeholder">
+                    <span className="user-icon">👤</span>
+                  </div>
+                )}
+                <label htmlFor="profile-input" className="camera-icon-label">
+                  <FontAwesomeIcon icon={faCamera} />
+                </label>
+              </div>
+              <input
+                id="profile-input"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
+              <p className="upload-info-text">
+                프로필 사진을 등록해주세요 (선택)
+              </p>
+            </div>
+
             <form className="grid-form" onSubmit={(e) => e.preventDefault()}>
               <div className="field-group">
                 <label className="field-label">아이디</label>
@@ -239,9 +347,7 @@ export default function SignupPage() {
               onChange={onChange}
               isOtpSent={isOtpSent}
               handleSendOtp={handleSendOtp}
-              handleVerifyOtp={() =>
-                handleVerifyOtp(timer, form.otp, setIsCompleted)
-              }
+              handleVerifyOtp={onVerifyOtp}
               timer={timer}
               formatTime={formatTime}
             />
