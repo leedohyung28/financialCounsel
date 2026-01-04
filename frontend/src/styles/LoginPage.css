@@ -104,8 +104,9 @@ body {
 .input-area {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 40px;
+  gap: 4px;
+  margin-bottom: 32px;
+  min-height: 85px;
 }
 
 .field-label {
@@ -349,4 +350,55 @@ input:checked + .slider:before {
 /* 애니메이션 효과 (선택사항: 부드러운 전환) */
 .input-area {
   transition: all 0.3s ease;
+}
+
+/* 에러 테두리 */
+.field-input.error-border {
+  border-color: #d93025 !important; /* 구글 에러 레드 컬러 */
+}
+
+.theme-dark .field-input.error-border {
+  border-color: #f28b82 !important; /* 다크모드 에러 레드 컬러 */
+}
+
+/* 에러 메시지 스타일 */
+.error-msg {
+  color: #d93025;
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.theme-dark .error-msg {
+  color: #f28b82;
+}
+
+/* 흔들림 애니메이션 */
+.shake {
+  animation: shake 0.1s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
 }

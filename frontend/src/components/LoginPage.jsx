@@ -1,4 +1,3 @@
-// LoginPage.jsx
 import React, { useState } from "react";
 import "../styles/LoginPage.css";
 import "../styles/PasswordPage.css";
@@ -6,6 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../hooks/useNavigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import api from "../utils/axios";
 
 export default function LoginPage() {
   const { goToFindAccount, goToSignUp, goToAddressHome } = useNavigation();
@@ -18,27 +18,95 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [isError, setIsError] = useState(false);
+
   // '다음' 또는 '로그인' 버튼 클릭 핸들러
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (step === 1) {
-      // 간단한 이메일 유효성 검사 (빈 값 체크)
-      if (email.trim().length > 0) {
-        setStep(2); // 비밀번호 입력 단계로 이동
-      } else {
+      if (email.trim().length === 0) {
         alert("이메일을 입력해주세요.");
+        return;
+      }
+
+      setLoading(true);
+      setEmailError("");
+      setIsError(false);
+      try {
+        const response = await api.post("/api/client/search/email", {
+          email: email,
+        });
+
+        // Output(계정 존재 여부) 확인
+        const resultCode = response.data.resultCode;
+        const message = response.data.message;
+
+        if (resultCode === 0) {
+          // 계정이 존재하면 다음 단계로
+          setStep(2);
+        } else {
+          // 계정이 존재하지 않으면 에러 처리
+          triggerError(message);
+        }
+      } catch (error) {
+        triggerError("이메일 확인 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
       }
     } else {
-      // 여기서 실제 로그인 API 호출
-      console.log("로그인 시도:", { email, password });
-      alert(`로그인 시도\nID: ${email}\nPW: ${password}`);
-      goToAddressHome();
+      // --- STEP 2: 암호화 및 로그인 로직 ---
+      if (password.trim().length === 0) {
+        triggerError("비밀번호를 입력해주세요.");
+        return;
+      }
+
+      setLoading(true);
+      try {
+        // 로그인 API 호출
+        const response = await api.post("/api/client/login", {
+          email: email,
+          password: password,
+        });
+
+        // Output(로그인) 확인
+        const resultCode = response.data.resultCode;
+        const message = response.data.message;
+
+        // 결과 확인
+        if (resultCode === 0) {
+          goToAddressHome();
+        } else {
+          triggerError(message);
+        }
+      } catch (error) {
+        console.error("로그인 오류:", error);
+        triggerError("로그인 처리 중 서버 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
     }
+  };
+  // 에러 발생 시 애니메이션 초기화를 위한 함수
+  const triggerError = (msg) => {
+    setEmailError(msg);
+    setIsError(true);
+    // 0.5초(애니메이션 시간) 후 클래스 제거 (재반복 가능하도록)
+    setTimeout(() => setIsError(false), 500);
+  };
+
+  // 입력 시 에러 메시지 초기화
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    if (emailError) setEmailError("");
   };
 
   // 이메일 수정하고 싶을 때 되돌아가기
   const handleBackToEmail = () => {
     setStep(1);
-    setPassword(""); // 비밀번호 초기화 (선택사항)
+    setPassword("");
+    setEmailError("");
+    setIsError(false);
   };
 
   // 엔터키 이벤트 처리
@@ -86,12 +154,16 @@ export default function LoginPage() {
               </label>
               <input
                 id="email"
-                className="field-input"
+                className={`field-input ${emailError ? "error-border" : ""} ${
+                  isError ? "shake" : ""
+                }`}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 onKeyDown={handleKeyDown}
                 autoFocus
               />
+              {emailError && <div className="error-msg">{emailError}</div>}
+              {!emailError}
               <button
                 type="button"
                 className="link-btn"
@@ -106,13 +178,21 @@ export default function LoginPage() {
               <label className="field-label" htmlFor="password">
                 비밀번호
               </label>
-              <div className="password-wrapper">
+              <div className={`password-wrapper ${isError ? "shake" : ""}`}>
                 <input
                   id="password"
-                  type={showPassword ? "text" : "password"} // 상태에 따라 타입 변경
-                  className="field-input password-input"
+                  type={showPassword ? "text" : "password"}
+                  className={`field-input password-input ${
+                    emailError ? "error-border" : ""
+                  }`}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (emailError) {
+                      setEmailError("");
+                      setIsError(false);
+                    }
+                  }}
                   onKeyDown={handleKeyDown}
                   autoFocus
                 />
@@ -120,17 +200,11 @@ export default function LoginPage() {
                   type="button"
                   className="password-toggle-icon"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={
-                    showPassword ? "비밀번호 숨기기" : "비밀번호 표시"
-                  }
                 >
-                  {showPassword ? (
-                    <FontAwesomeIcon icon={faEye} />
-                  ) : (
-                    <FontAwesomeIcon icon={faEyeSlash} />
-                  )}{" "}
+                  <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
                 </button>
               </div>
+              {emailError && <div className="error-msg">{emailError}</div>}
             </>
           )}
         </div>
@@ -141,22 +215,15 @@ export default function LoginPage() {
               계정 만들기
             </button>
           ) : (
-            /* 2단계에서는 계정 만들기 대신 '뒤로 가기' 혹은 공백 처리 */
-            <button
-              type="button"
-              className="link-btn"
-              style={{ visibility: "hidden" }}
-            >
-              placeholder
-            </button>
+            <div />
           )}
-
           <button
             type="button"
             className="primary-btn"
             onClick={handleNextStep}
+            disabled={loading}
           >
-            {step === 1 ? "다음" : "로그인"}
+            {loading ? "처리 중..." : step === 1 ? "다음" : "로그인"}
           </button>
         </div>
       </div>
