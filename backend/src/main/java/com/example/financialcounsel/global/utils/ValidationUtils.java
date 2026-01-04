@@ -6,6 +6,7 @@ import lombok.NonNull;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 public class ValidationUtils {
 
@@ -56,6 +57,54 @@ public class ValidationUtils {
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException("필드 접근 중 오류 발생", e);
                 }
+            }
+        }
+    }
+
+    /**
+     * 특정 필드만 선택하여 검증을 수행하는 메서드
+     *
+     * @param target   검증할 VO 객체
+     * @param selected 검증할 필드명 리스트 (e.g., Arrays.asList("name", "email"))
+     * @param action   "입력", "수정", "삭제" 등 메시지에 포함될 행위
+     */
+    public static void validateSelectedFields(Object target, List<String> selected, String action) {
+        // 클래스 레벨의 @DomainName 정보 추출
+        Class<?> targetClass = target.getClass();
+        String domainDisplayName = targetClass.isAnnotationPresent(DomainName.class)
+                ? targetClass.getAnnotation(DomainName.class).value()
+                : targetClass.getSimpleName();
+
+        // 객체 자체의 Null 여부 확인
+        String targetNullMessage = String.format("%s할 %s 정보가 없습니다.", action, domainDisplayName);
+        Assert.notNull(target, targetNullMessage);
+
+        for (String fieldName : selected) {
+            try {
+                Field field = targetClass.getDeclaredField(fieldName);
+                field.setAccessible(true);
+
+                Object value = field.get(target);
+
+                // @FieldName에서 한글명 추출 (없으면 필드명 사용)
+                String fieldDisplayName = field.isAnnotationPresent(FieldName.class)
+                        ? field.getAnnotation(FieldName.class).value()
+                        : field.getName();
+
+                // 필드 값 Null 체크
+                String message = String.format("%s할 %s(은)는 필수 값입니다.", action, fieldDisplayName);
+                Assert.notNull(value, message);
+
+                // String 타입인 경우 빈 문자열 체크
+                if (value instanceof String) {
+                    String messageString = String.format("%s할 %s(은)는 내용을 입력해야 합니다.", action, fieldDisplayName);
+                    Assert.hasText((String) value, messageString);
+                }
+
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(String.format("%s 클래스에 %s 필드가 존재하지 않습니다.", targetClass.getSimpleName(), fieldName), e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("필드 접근 중 오류 발생", e);
             }
         }
     }
