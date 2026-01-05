@@ -34,23 +34,24 @@ export default function LoginPage() {
       setEmailError("");
       setIsError(false);
       try {
-        const response = await api.post("/api/client/search/email", {
-          email: email,
-        });
+        const response = await api.post("/api/client/search/email", { email });
 
-        // Output(계정 존재 여부) 확인
-        const resultCode = response.data.resultCode;
-        const message = response.data.message;
+        // API 결과
+        const { success, message, data } = response.data;
 
-        if (resultCode === 0) {
-          // 계정이 존재하면 다음 단계로
+        // data(LoginResponse) 내부의 resultCode 확인
+        if (success && data.resultCode === 0) {
           setStep(2);
         } else {
-          // 계정이 존재하지 않으면 에러 처리
-          triggerError(message);
+          // 이메일이 없거나 서버 에러인 경우
+          triggerError(data?.message || message || "계정을 찾을 수 없습니다.");
         }
       } catch (error) {
-        triggerError("이메일 확인 중 오류가 발생했습니다.");
+        // Axios 에러 처리 (상태코드 400 등)
+        const errorMsg =
+          error.response?.data?.message ||
+          "이메일 확인 중 오류가 발생했습니다.";
+        triggerError(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -63,25 +64,26 @@ export default function LoginPage() {
 
       setLoading(true);
       try {
-        // 로그인 API 호출
         const response = await api.post("/api/client/login", {
-          email: email,
-          password: password,
+          email,
+          password,
         });
 
-        // Output(로그인) 확인
-        const resultCode = response.data.resultCode;
-        const message = response.data.message;
+        const { success, message, data } = response.data;
 
-        // 결과 확인
-        if (resultCode === 0) {
+        // success가 true이고, 로그인 결과 코드가 0일 때 성공
+        if (success && data.resultCode === 0) {
           goToAddressHome();
         } else {
-          triggerError(message);
+          // 비밀번호 불일치 등 (data.message에 "로그인에 실패했습니다" 등이 담김)
+          triggerError(
+            data?.message || message || "로그인 정보가 올바르지 않습니다."
+          );
         }
       } catch (error) {
-        console.error("로그인 오류:", error);
-        triggerError("로그인 처리 중 서버 오류가 발생했습니다.");
+        const errorMsg =
+          error.response?.data?.message || "로그인 중 오류가 발생했습니다.";
+        triggerError(errorMsg);
       } finally {
         setLoading(false);
       }

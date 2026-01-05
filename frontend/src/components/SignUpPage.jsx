@@ -12,6 +12,14 @@ import { useNavigation } from "../hooks/useNavigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
 import api from "../utils/axios";
+import {
+  checkFileSize,
+  emailRegex,
+  formatBirth,
+  formatPhone,
+  pwRegex,
+  validateBirth,
+} from "../context/FormatUtils";
 
 export default function SignupPage() {
   const { isDark, toggleTheme } = useTheme();
@@ -51,36 +59,44 @@ export default function SignupPage() {
 
   const onChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-    setForm((prev) => ({
-      ...prev,
-      birth: date ? date.toISOString().split("T")[0] : "",
-    }));
+    // 휴대폰 번호 자동 포매팅
+    if (name === "phone") {
+      setForm((prev) => ({ ...prev, [name]: formatPhone(value) }));
+      return;
+    }
+
+    // 생년월일 자동 포매팅 (텍스트 입력 시)
+    if (name === "birthText") {
+      const formatted = formatBirth(value);
+      setForm((prev) => ({ ...prev, birth: formatted }));
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   // 이미지 변경 핸들러
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // 1. 파일 객체를 form에 저장
-      setForm((prev) => ({ ...prev, profileImage: file }));
+    if (!file) return;
 
-      // 2. 브라우저 미리보기 URL 생성
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
+    // 외부 함수 호출 (파일 객체와 제한 용량 전달)
+    if (!checkFileSize(file, 10)) {
+      e.target.value = ""; // 검증 실패 시 input 초기화
+      return;
     }
-  };
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const pwRegex =
-    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    // 파일 객체를 form에 저장
+    setForm((prev) => ({ ...prev, profileImage: file }));
+
+    // 브라우저 미리보기 URL 생성
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // [다음] 버튼 클릭 시 (1단계 -> 2단계)
   const handleNextStep = () => {
@@ -92,6 +108,15 @@ export default function SignupPage() {
       alert("비밀번호 규칙을 확인해주세요.");
       return;
     }
+
+    // 생년월일 입력이 있는 경우 유효성 검사 추가
+    if (form.birth && !validateBirth(form.birth)) {
+      alert(
+        "생년월일 형식이 올바르지 않거나 유효하지 않은 날짜입니다. (예: 1990-01-01)"
+      );
+      return;
+    }
+
     setStep(2);
   };
 
@@ -109,36 +134,39 @@ export default function SignupPage() {
   // [최종 가입 요청] 함수 추가
   const handleSignupSubmit = async () => {
     try {
-      // 파일 전송을 위해 FormData 객체 생성
       const formData = new FormData();
 
-      // 일반 폼 필드 추가
-      Object.keys(form).forEach((key) => {
-        if (key !== "profileImage") {
-          formData.append(key, form[key]);
-        }
-      });
-
-      // 프로필 이미지 파일이 있다면 추가
+      // 서버(ClientVO)의 필드명에 맞춰서 formData 삽입
+      formData.append("email", form.userId);
+      formData.append("password", form.password);
+      if (form.name) formData.append("name", form.name);
+      formData.append("phoneNum", form.phone);
+      if (form.gender) formData.append("sex", form.gender);
+      if (form.region) formData.append("location", form.region);
       if (form.profileImage) {
-        formData.append("profileImage", form.profileImage);
+        formData.append("image", form.profileImage);
       }
 
-      // API 호출 (multipart/form-data)
+      // API 호출
       const response = await api.post("/api/client/signup", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      if (response.status === 200 || response.data.resultCode === 0) {
-        setIsCompleted(true); // 가입 완료 화면으로 전환
+      // API 결과
+      const { success, message } = response.data;
+
+      if (success) {
+        setIsCompleted(true);
       } else {
-        alert(response.data.message || "회원가입에 실패했습니다.");
+        // 비즈니스 로직 상의 에러
+        alert(message || "회원가입에 실패했습니다.");
       }
     } catch (error) {
-      console.error("Signup Error:", error);
-      alert("서버 통신 중 오류가 발생했습니다.");
+      const errorMessage =
+        error.response?.data?.message || "서버 통신 중 오류가 발생했습니다.";
+      alert(errorMessage);
     }
   };
 
@@ -154,8 +182,8 @@ export default function SignupPage() {
     const isSuccess = await handleVerifyOtp(timer, form.otp, () => {});
 
     if (isSuccess) {
-      alert("인증에 성공하였습니다! 회원가입을 완료합니다.");
       handleSignupSubmit(); // 인증 성공 시 바로 가입 요청
+      alert("인증에 성공하였습니다! 회원가입을 완료합니다.");
     } else {
       alert("인증번호가 일치하지 않거나 시간이 만료되었습니다.");
     }
@@ -269,8 +297,9 @@ export default function SignupPage() {
                   생년월일 <span className="optional">(선택사항)</span>
                 </label>
                 <DatePicker
+                  name="birthText"
                   selected={selectedDate}
-                  onChange={handleDateChange}
+                  onChange={onchange}
                   dateFormat="yyyy-MM-dd"
                   className="field-input"
                   placeholderText="YYYY-MM-DD"
@@ -290,13 +319,13 @@ export default function SignupPage() {
                 >
                   <option value="">선택 안 함</option>
 
-                  <option value="male">남성</option>
+                  <option value="M">남성</option>
 
-                  <option value="female">여성</option>
+                  <option value="F">여성</option>
 
-                  <option value="other">기타</option>
+                  <option value="O">기타</option>
 
-                  <option value="no">표시 안 함</option>
+                  <option value="X">표시 안 함</option>
                 </select>
               </div>
 
