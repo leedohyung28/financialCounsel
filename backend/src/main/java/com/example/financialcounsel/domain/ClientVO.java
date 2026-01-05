@@ -4,7 +4,9 @@ import com.example.financialcounsel.global.annotation.DomainName;
 import com.example.financialcounsel.global.annotation.FieldName;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 
@@ -50,7 +52,12 @@ public class ClientVO {
 
     @Getter
     @Setter @FieldName("프로필사진")
-    private String profileImage;
+    @Transient
+    private MultipartFile image;
+
+    @Getter
+    @Setter @FieldName("프로필사진")
+    private byte[] profileImage;
 
     @Getter
     @Setter @FieldName("사용여부")
