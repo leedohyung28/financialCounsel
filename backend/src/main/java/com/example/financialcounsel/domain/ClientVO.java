@@ -60,7 +60,8 @@ public class ClientVO {
     private byte[] profileImage;
 
     @Getter
-    @Setter @FieldName("사용여부")
+    @Setter
+    @NonNull @FieldName("사용여부")
     private Boolean useYn;
 
     @Setter

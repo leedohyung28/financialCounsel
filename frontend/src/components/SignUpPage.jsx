@@ -140,7 +140,7 @@ export default function SignupPage() {
       formData.append("email", form.userId);
       formData.append("password", form.password);
       if (form.name) formData.append("name", form.name);
-      formData.append("phoneNum", form.phone);
+      formData.append("phoneNum", form.phone.replace(/[^0-9]/g, ""));
       if (form.gender) formData.append("sex", form.gender);
       if (form.region) formData.append("location", form.region);
       if (form.profileImage) {
