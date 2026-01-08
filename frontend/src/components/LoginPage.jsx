@@ -6,6 +6,7 @@ import { useNavigation } from "../hooks/useNavigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import api from "../utils/axios";
+import { setSession } from "../utils/session";
 
 export default function LoginPage() {
   const { goToFindAccount, goToSignUp, goToAddressHome } = useNavigation();
@@ -73,6 +74,7 @@ export default function LoginPage() {
 
         // success가 true이고, 로그인 결과 코드가 0일 때 성공
         if (success && data.resultCode === 0) {
+          setSession(data.userId, "userSession", 3);
           goToAddressHome();
         } else {
           // 비밀번호 불일치 등 (data.message에 "로그인에 실패했습니다" 등이 담김)

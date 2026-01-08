@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import "../styles/AddressHomePage.css";
-import { useTheme } from "../context/ThemeContext";
 import SearchSection from "./common/SearchSection";
+import Header from "./common/Header";
 
 export default function AddressHomePage({ onSearchClick, onMapClick }) {
   const [keyword, setKeyword] = useState("");
-
-  const { isDark, toggleTheme } = useTheme();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,17 +14,8 @@ export default function AddressHomePage({ onSearchClick, onMapClick }) {
   };
 
   return (
-    <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
-      <div className="theme-toggle">
-        <span className="toggle-label">
-          {isDark ? "다크 모드" : "라이트 모드"}
-        </span>
-        <label className="switch">
-          <input type="checkbox" checked={isDark} onChange={toggleTheme} />
-          <span className="slider"></span>
-        </label>
-      </div>
-
+    <div className="root">
+      <Header />
       <div className="home-inner">
         {/* 상단 큰 검색 영역 */}
         <SearchSection
