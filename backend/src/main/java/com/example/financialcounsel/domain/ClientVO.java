@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Document(collection = "client")
 @Data
@@ -66,7 +67,7 @@ public class ClientVO {
 
     @Setter
     @NonNull @FieldName("생성 일시")
-    private Timestamp createdAt;
+    private Date createdAt;
 
     @Setter
     @NonNull @FieldName("생성자 ID")
@@ -74,7 +75,7 @@ public class ClientVO {
 
     @Setter
     @NonNull @FieldName("수정 일시")
-    private Timestamp updatedAt;
+    private Date updatedAt;
 
     @Setter
     @NonNull @FieldName("수정자 ID")

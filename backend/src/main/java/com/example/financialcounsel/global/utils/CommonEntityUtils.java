@@ -2,6 +2,7 @@ package com.example.financialcounsel.global.utils;
 
 import com.example.financialcounsel.domain.ClientVO;
 import java.sql.Timestamp;
+import java.util.Date;
 
 public class CommonEntityUtils {
 
@@ -10,7 +11,7 @@ public class CommonEntityUtils {
      */
     public static void commonCreateFunc(ClientVO vo) {
         String currentId = SessionUtils.getCurrentUserId();
-        Timestamp now = new Timestamp(System.currentTimeMillis());
+        Date now = new Date(System.currentTimeMillis());
 
         vo.setCreatedAt(now);
         vo.setCreatedId(currentId);
@@ -23,7 +24,7 @@ public class CommonEntityUtils {
      */
     public static void commonUpdateFunc(ClientVO vo) {
         String currentId = SessionUtils.getCurrentUserId();
-        Timestamp now = new Timestamp(System.currentTimeMillis());
+        Date now = new Date(System.currentTimeMillis());
 
         vo.setUpdatedAt(now);
         vo.setUpdatedId(currentId);
