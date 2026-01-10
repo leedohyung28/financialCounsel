@@ -16,6 +16,12 @@ export const clientApi = {
     return response.data;
   },
 
+  // 이메일 검증
+  validEmail: async (email) => {
+    const response = await api.post("/api/client/valid/email", { email });
+    return response.data;
+  },
+
   // 회원등록
   signUpClient: async (formData) => {
     const response = await api.post("/api/client/signup", formData, {

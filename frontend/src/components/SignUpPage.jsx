@@ -6,7 +6,12 @@ import "../styles/PhoneCertify.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "./common/PhoneAuth";
 import PhoneAuth from "./common/PhoneAuth";
-import { formatTime, handleVerifyOtp } from "../context/PhoneAuth";
+import {
+  formatTime,
+  handleSendOtp,
+  handleVerifyOtp,
+  onVerifyOtp,
+} from "../context/PhoneAuth";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../hooks/useNavigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -109,7 +114,7 @@ export default function SignupPage() {
       return;
     }
     try {
-      const { success, data } = await clientApi.validId(form.userId);
+      const { success, data } = await clientApi.validEmail(form.userId);
       if (success && data.resultCode === 0) {
         alert("사용 가능한 아이디입니다.");
         setIsIdVerified(true);
@@ -173,17 +178,6 @@ export default function SignupPage() {
     setStep(2);
   };
 
-  // [전송 / 재전송] 버튼
-  const handleSendOtp = () => {
-    if (!form.phone) {
-      alert("전화번호를 입력해주세요.");
-      return;
-    }
-    setIsOtpSent(true);
-    setTimer(180);
-    alert("인증번호가 발송되었습니다.");
-  };
-
   // [최종 가입 요청] 함수 추가
   const handleSignupSubmit = async () => {
     try {
@@ -212,25 +206,6 @@ export default function SignupPage() {
       const errorMessage =
         error.response?.data?.message || "서버 통신 중 오류가 발생했습니다.";
       alert(errorMessage);
-    }
-  };
-
-  // [인증 확인 핸들러] 수정
-  const onVerifyOtp = async () => {
-    // 1. 먼저 OTP 번호가 입력되었는지 확인
-    if (!form.otp) {
-      alert("인증번호를 입력해주세요.");
-      return;
-    }
-
-    // 인증 시도 (기존 handleVerifyOtp 로직 활용)
-    const isSuccess = await handleVerifyOtp(timer, form.otp, () => {});
-
-    if (isSuccess) {
-      handleSignupSubmit(); // 인증 성공 시 바로 가입 요청
-      alert("인증에 성공하였습니다! 회원가입을 완료합니다.");
-    } else {
-      alert("인증번호가 일치하지 않거나 시간이 만료되었습니다.");
     }
   };
 
@@ -305,22 +280,26 @@ export default function SignupPage() {
                 <div className="input-with-button">
                   <input
                     name="userId"
+                    disabled={isIdVerified}
                     className={`field-input flex-1 ${
                       isIdError ? "error-border shake" : ""
-                    }`}
+                    } ${isIdVerified ? "verified-input" : ""}`}
                     value={form.userId}
                     onChange={(e) => {
                       onChange(e);
-                      setIsIdVerified(false); // 수정 시 재인증 필요
+                      setIsIdVerified(false);
                     }}
                     placeholder="example@domain.com"
                   />
                   <button
                     type="button"
-                    className="inner-check-btn"
+                    disabled={isIdVerified}
+                    className={`inner-check-btn ${
+                      isIdVerified ? "verified-btn" : ""
+                    }`}
                     onClick={handleCheckId}
                   >
-                    확인
+                    {isIdVerified ? "확인됨" : "확인"}
                   </button>
                 </div>
               </div>
@@ -451,8 +430,18 @@ export default function SignupPage() {
               form={form}
               onChange={onChange}
               isOtpSent={isOtpSent}
-              handleSendOtp={handleSendOtp}
-              handleVerifyOtp={onVerifyOtp}
+              handleSendOtp={() =>
+                handleSendOtp(form.phone, setIsOtpSent, setTimer)
+              }
+              handleVerifyOtp={async () => {
+                const success = await onVerifyOtp(form.otp, timer);
+                if (success) {
+                  handleSignupSubmit();
+                  alert("인증에 성공하였습니다! 회원가입을 완료합니다.");
+                } else {
+                  alert("인증번호가 일치하지 않거나 시간이 만료되었습니다.");
+                }
+              }}
               timer={timer}
               formatTime={formatTime}
             />

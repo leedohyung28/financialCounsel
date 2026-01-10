@@ -324,3 +324,31 @@
   font-size: 12px;
   color: #666;
 }
+
+/* 중복 확인 성공 후 input 스타일 */
+.field-input.verified-input {
+  background-color: #f8f9fa !important; /* 연한 회색 배경 */
+  color: #9aa0a6; /* 텍스트 흐리게 */
+  border-color: #dadce0;
+  cursor: not-allowed;
+}
+
+.theme-dark .field-input.verified-input {
+  background-color: #2c2c2c !important;
+  color: #5f6368;
+  border-color: #3c4043;
+}
+
+/* 중복 확인 성공 후 버튼 스타일 */
+.inner-check-btn.verified-btn {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  cursor: not-allowed;
+  border: 1px solid #1a73e8;
+}
+
+.theme-dark .inner-check-btn.verified-btn {
+  background-color: #1a2736;
+  color: #8ab4f8;
+  border: 1px solid #8ab4f8;
+}
