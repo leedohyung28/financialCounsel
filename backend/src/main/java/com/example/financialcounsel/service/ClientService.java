@@ -1,6 +1,7 @@
 package com.example.financialcounsel.service;
 
 import com.example.financialcounsel.domain.ClientVO;
+import com.example.financialcounsel.dto.client.ClientResponse;
 import com.example.financialcounsel.dto.client.LoginResponse;
 import com.example.financialcounsel.global.utils.CommonEntityUtils;
 import com.example.financialcounsel.global.utils.EncryptUtils;
@@ -33,13 +34,15 @@ public class ClientService {
      * @return ClientVO 객체
      */
     @Transactional(readOnly = true)
-    public ClientVO selectSingleClient(ClientVO clientVO) {
+    public ClientResponse selectSingleClient(ClientVO clientVO) {
         // InputVO 검증
         // 직원ID 필수 입력 검증
-        ValidationUtils.validateSelectedFields(clientVO, List.of("id"), "조회");
+        ValidationUtils.validateSelectedFields(clientVO, List.of("email"), "조회");
 
-        return clientRepository.findById(clientVO.getId())
-                .orElseThrow(() -> new RuntimeException("해당 ID의 직원을 찾을 수 없습니다."));
+        ClientVO entity = clientRepository.findByEmail(clientVO.getEmail())
+                .orElseThrow(() -> new RuntimeException("해당 이메일의 직원을 찾을 수 없습니다."));
+
+        return ClientResponse.from(entity);
     }
 
     /**
@@ -59,6 +62,25 @@ public class ClientService {
                 })
                 // [코드 9] Client 실패
                 .orElseGet(() -> LoginResponse.of(9, "존재하지 않는 이메일입니다."));
+    }
+
+    /**
+     * 이메일 중복 검증
+     * @param clientVO 조회 할 직원의 ID
+     * @return ClientVO 객체
+     */
+    @Transactional(readOnly = true)
+    public LoginResponse validDuplicateEmail(ClientVO clientVO) {
+        // InputVO, 직원이메일 필수 입력 검증
+        ValidationUtils.validateSelectedFields(clientVO, List.of("email"), "조회");
+
+        return clientRepository.findByEmail(clientVO.getEmail())
+                .map(found -> {
+                    // [코드 0] Client 확인
+                    return LoginResponse.of(9, "이미 존재하는 이메일");
+                })
+                // [코드 9] Client 실패
+                .orElseGet(() -> LoginResponse.of(0, "Valid Success"));
     }
 
     /**

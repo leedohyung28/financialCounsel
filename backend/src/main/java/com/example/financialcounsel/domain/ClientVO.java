@@ -44,6 +44,10 @@ public class ClientVO {
     private String sex;
 
     @Getter
+    @Setter @FieldName("생년월일")
+    private Date birthday;
+
+    @Getter
     @Setter @FieldName("위치")
     private String location;
 
