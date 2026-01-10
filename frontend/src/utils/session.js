@@ -1,5 +1,19 @@
-export const getValidSession = () => {
-  const sessionStr = sessionStorage.getItem("userSession");
+// 세션 설정
+export const setSession = (sessionName, param, minute) => {
+  const now = new Date().getTime();
+  const sessionData = {
+    userId: param, // param
+    expiry: now + minute * 60 * 1000, // 현재 시간 + minute분(ms)
+  };
+
+  console.log("sessionData : ", sessionData);
+
+  // 객체를 문자열로 변환하여 저장
+  sessionStorage.setItem(sessionName, JSON.stringify(sessionData));
+};
+
+export const getSession = (sessionName) => {
+  const sessionStr = sessionStorage.getItem(sessionName);
 
   if (!sessionStr) return null;
 
@@ -8,27 +22,15 @@ export const getValidSession = () => {
 
   // 현재 시간이 만료 시간보다 크면 세션 파기
   if (now > session.expiry) {
-    sessionStorage.removeItem("userSession");
+    sessionStorage.removeItem(sessionName);
     return null;
   }
 
-  return session.userId;
+  return session;
 };
 
 export const logout = () => {
   sessionStorage.removeItem("userSession");
-};
-
-// 세션 설정
-export const setSession = (param, sessionName, minute) => {
-  const now = new Date().getTime();
-  const sessionData = {
-    userId: param, // param
-    expiry: now + minute * 60 * 1000, // 현재 시간 + minute분(ms)
-  };
-
-  // 객체를 문자열로 변환하여 저장
-  sessionStorage.setItem(sessionName, JSON.stringify(sessionData));
 };
 
 // 세션 연장

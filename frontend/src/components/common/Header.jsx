@@ -3,14 +3,18 @@ import { useTheme } from "../../context/ThemeContext";
 import { useNavigation } from "../../hooks/useNavigation";
 import { extendSession, logout } from "../../utils/session";
 import "../../styles/Header.css";
+import EditProfileModal from "../EditProfileModal";
+import PasswordVerifyModal from "../PasswordVerifyModal";
 
 export default function Header() {
-  const [timeLeft, setTimeLeft] = useState("03:00");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isDark, toggleTheme } = useTheme();
   const { goToLogin } = useNavigation();
 
+  const [timeLeft, setTimeLeft] = useState("03:00");
   const [sessionTick, setSessionTick] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isVerifyOpen, setIsVerifyOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const formatTime = (expiry) => {
     const now = new Date().getTime();
@@ -19,6 +23,11 @@ export default function Header() {
     const m = Math.floor(diff / 60000);
     const s = Math.floor((diff % 60000) / 1000);
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const handleVerifySuccess = () => {
+    setIsVerifyOpen(false);
+    setIsEditOpen(true);
   };
 
   useEffect(() => {
@@ -69,6 +78,15 @@ export default function Header() {
               <div className="dropdown-menu">
                 <button type="button" onClick={handleExtend}>
                   세션 시간 연장
+                </button>{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsVerifyOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  정보 수정
                 </button>
                 <button type="button" onClick={handleLogout}>
                   로그아웃
@@ -87,6 +105,13 @@ export default function Header() {
           </label>
         </div>
       </div>
+      {isVerifyOpen && (
+        <PasswordVerifyModal
+          onClose={() => setIsVerifyOpen(false)}
+          onSuccess={handleVerifySuccess}
+        />
+      )}
+      {isEditOpen && <EditProfileModal onClose={() => setIsEditOpen(false)} />}
     </header>
   );
 }

@@ -14,6 +14,43 @@
   transition: all 0.3s ease-in-out;
 }
 
+.input-with-button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+/* 아이디 옆 [확인] 버튼 스타일 */
+.inner-check-btn {
+  padding: 10px 16px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  height: 45px; /* input 높이와 맞춤 */
+  margin-top: 4px;
+}
+
+.inner-check-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.theme-dark .inner-check-btn {
+  background-color: var(--primary);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
 /* 테마별 카드 배경/테두리 */
 
 .theme-light .signup-card {
@@ -88,7 +125,6 @@
 }
 
 /* 인풋은 로그인 페이지 스타일 재사용 */
-
 .field-input {
   padding: 10px 10px;
   font-size: 15px;

@@ -5,8 +5,8 @@ import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../hooks/useNavigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import api from "../utils/axios";
 import { setSession } from "../utils/session";
+import { clientApi } from "../api/clientApi";
 
 export default function LoginPage() {
   const { goToFindAccount, goToSignUp, goToAddressHome } = useNavigation();
@@ -35,10 +35,8 @@ export default function LoginPage() {
       setEmailError("");
       setIsError(false);
       try {
-        const response = await api.post("/api/client/search/email", { email });
-
         // API 결과
-        const { success, message, data } = response.data;
+        const { success, message, data } = await clientApi.validId(email);
 
         // data(LoginResponse) 내부의 resultCode 확인
         if (success && data.resultCode === 0) {
@@ -65,16 +63,13 @@ export default function LoginPage() {
 
       setLoading(true);
       try {
-        const response = await api.post("/api/client/login", {
-          email,
-          password,
-        });
+        const result = await clientApi.loginClient(email, password);
 
-        const { success, message, data } = response.data;
+        const { success, message, data } = result;
 
         // success가 true이고, 로그인 결과 코드가 0일 때 성공
         if (success && data.resultCode === 0) {
-          setSession(data.userId, "userSession", 3);
+          setSession("userSession", email, 3);
           goToAddressHome();
         } else {
           // 비밀번호 불일치 등 (data.message에 "로그인에 실패했습니다" 등이 담김)

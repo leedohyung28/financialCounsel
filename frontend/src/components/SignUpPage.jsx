@@ -11,7 +11,6 @@ import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../hooks/useNavigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
-import api from "../utils/axios";
 import {
   checkFileSize,
   emailRegex,
@@ -20,6 +19,7 @@ import {
   pwRegex,
   validateBirth,
 } from "../context/FormatUtils";
+import { clientApi } from "../api/clientApi";
 
 export default function SignupPage() {
   const { isDark, toggleTheme } = useTheme();
@@ -30,7 +30,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({
     userId: "",
     name: "",
-    birth: "",
+    birthday: "",
     gender: "",
     region: "",
     password: "",
@@ -39,6 +39,10 @@ export default function SignupPage() {
     profileImage: null,
   });
 
+  const [isIdVerified, setIsIdVerified] = useState(false); // 아이디 중복확인 여부
+  const [pwErrorMsg, setPwErrorMsg] = useState("");
+  const [isPwError, setIsPwError] = useState(false);
+  const [isIdError, setIsIdError] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [timer, setTimer] = useState(180); // 3분 (180초)
@@ -98,8 +102,57 @@ export default function SignupPage() {
     reader.readAsDataURL(file);
   };
 
+  // 아이디 중복 확인
+  const handleCheckId = async () => {
+    if (!emailRegex.test(form.userId)) {
+      triggerIdError("유효한 이메일 형식이 아닙니다.");
+      return;
+    }
+    try {
+      const { success, data } = await clientApi.validId(form.userId);
+      if (success && data.resultCode === 0) {
+        alert("사용 가능한 아이디입니다.");
+        setIsIdVerified(true);
+      } else {
+        triggerIdError("이미 사용 중인 아이디입니다.");
+      }
+    } catch (error) {
+      triggerIdError("중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 비밀번호 확인 검사 (커서가 옮겨졌을 때 - onBlur)
+  const handlePwBlur = () => {
+    if (form.passwordConfirm && form.password !== form.passwordConfirm) {
+      triggerPwError("비밀번호가 일치하지 않습니다.");
+    } else {
+      setPwErrorMsg("");
+      setIsPwError(false);
+    }
+  };
+
+  const triggerPwError = (msg) => {
+    setPwErrorMsg(msg);
+    setIsPwError(true);
+    setTimeout(() => setIsPwError(false), 500);
+  };
+
+  const triggerIdError = (msg) => {
+    alert(msg);
+    setIsIdError(true);
+    setTimeout(() => setIsIdError(false), 500);
+  };
+
   // [다음] 버튼 클릭 시 (1단계 -> 2단계)
   const handleNextStep = () => {
+    if (!isIdVerified) {
+      alert("아이디 중복 확인을 해주세요.");
+      return;
+    }
+    if (form.password !== form.passwordConfirm) {
+      triggerPwError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
     if (!emailRegex.test(form.userId)) {
       alert("아이디 형식이 올바르지 않습니다.");
       return;
@@ -141,21 +194,13 @@ export default function SignupPage() {
       formData.append("password", form.password);
       if (form.name) formData.append("name", form.name);
       formData.append("phoneNum", form.phone.replace(/[^0-9]/g, ""));
+      if (form.birthday) formData.append("birthday", form.birthday);
       if (form.gender) formData.append("sex", form.gender);
       if (form.region) formData.append("location", form.region);
-      if (form.profileImage) {
-        formData.append("image", form.profileImage);
-      }
+      if (form.profileImage) formData.append("image", form.profileImage);
 
       // API 호출
-      const response = await api.post("/api/client/signup", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      // API 결과
-      const { success, message } = response.data;
+      const { success, message } = await clientApi.signUpClient(formData);
 
       if (success) {
         setIsCompleted(true);
@@ -255,15 +300,29 @@ export default function SignupPage() {
             </div>
 
             <form className="grid-form" onSubmit={(e) => e.preventDefault()}>
-              <div className="field-group">
+              <div className="field-group full-width">
                 <label className="field-label">아이디</label>
-                <input
-                  name="userId"
-                  className="field-input"
-                  value={form.userId}
-                  onChange={onChange}
-                  placeholder="example@domain.com"
-                />
+                <div className="input-with-button">
+                  <input
+                    name="userId"
+                    className={`field-input flex-1 ${
+                      isIdError ? "error-border shake" : ""
+                    }`}
+                    value={form.userId}
+                    onChange={(e) => {
+                      onChange(e);
+                      setIsIdVerified(false); // 수정 시 재인증 필요
+                    }}
+                    placeholder="example@domain.com"
+                  />
+                  <button
+                    type="button"
+                    className="inner-check-btn"
+                    onClick={handleCheckId}
+                  >
+                    확인
+                  </button>
+                </div>
               </div>
               <div className="field-group">
                 <label className="field-label">비밀번호</label>
@@ -281,6 +340,22 @@ export default function SignupPage() {
                   </span>
                 </div>
               </div>
+
+              <div className="field-group">
+                <label className="field-label">비밀번호 확인</label>
+                <input
+                  name="passwordConfirm"
+                  type="password"
+                  className={`field-input ${pwErrorMsg ? "error-border" : ""} ${
+                    isPwError ? "shake" : ""
+                  }`}
+                  value={form.passwordConfirm}
+                  onChange={onChange}
+                  onBlur={handlePwBlur}
+                />
+                {pwErrorMsg && <div className="error-msg">{pwErrorMsg}</div>}
+              </div>
+
               <div className="field-group">
                 <label className="field-label">
                   이름 <span className="optional">(선택사항)</span>
@@ -299,6 +374,7 @@ export default function SignupPage() {
                 <DatePicker
                   name="birthText"
                   selected={selectedDate}
+                  onSelect={setSelectedDate}
                   onChange={onchange}
                   dateFormat="yyyy-MM-dd"
                   className="field-input"
@@ -319,13 +395,13 @@ export default function SignupPage() {
                 >
                   <option value="">선택 안 함</option>
 
-                  <option value="M">남성</option>
+                  <option value="male">남성</option>
 
-                  <option value="F">여성</option>
+                  <option value="female">여성</option>
 
-                  <option value="O">기타</option>
+                  <option value="other">기타</option>
 
-                  <option value="X">표시 안 함</option>
+                  <option value="none">표시 안 함</option>
                 </select>
               </div>
 
