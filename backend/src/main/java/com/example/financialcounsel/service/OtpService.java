@@ -55,7 +55,8 @@ public class OtpService {
 
             String email = clientVO.getEmail();
             String secretKey = key.getKey();
-
+            
+            session.setMaxInactiveInterval(3 * 60);
             session.setAttribute("OTP_KEY_" + email, secretKey);
 
             String otpAuthUrl = String.format(
@@ -78,7 +79,10 @@ public class OtpService {
         ValidationUtils.validateSelectedFields(otpVerifyRequest, List.of("email", "code"), "인증");
 
         String email = otpVerifyRequest.getEmail();
-        String secret = (String) session.getAttribute("OTP_KEY_" + email);
+
+        String sessionKey = "OTP_KEY_" + email;
+        String secret = (String) session.getAttribute(sessionKey);
+        session.removeAttribute(sessionKey);
 
         if (secret == null) {
             throw new RuntimeException("OTP 시크릿키가 존재하지 않습니다. 다시 회원가입을 진행해주세요.");
