@@ -1,0 +1,78 @@
+/* 툴팁 컨테이너 */
+.tooltip-container {
+  position: relative;
+  width: 100%;
+}
+
+.custom-tooltip {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 10;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.custom-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 20px;
+  border-width: 5px 5px 0;
+  border-style: solid;
+  border-color: #333 transparent transparent;
+}
+
+/* 복구 방식 선택 카드 */
+.option-card {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.option-card:hover {
+  background-color: #f8f9fa;
+  border-color: #1a73e8;
+}
+
+.option-icon {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.option-text strong {
+  display: block;
+  font-size: 14px;
+}
+
+.option-text span {
+  font-size: 12px;
+  color: #666;
+}
+
+.bottom-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.link-btn-blue {
+  color: #1a73e8;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: none;
+}
+.link-btn-blue:hover {
+  text-decoration: underline;
+}
