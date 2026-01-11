@@ -16,6 +16,29 @@ import org.springframework.web.bind.annotation.*;
 public class OtpController {
     private final OtpService otpService;
 
+
+    // 시크릿키 존재 여부 확인
+    @PostMapping("/valid")
+    public ResponseEntity<CommonResponse<OtpRegistrationResponse>> validSecretKey(@RequestBody ClientVO clientVO) {
+        try {
+            if(otpService.validSecretKey(clientVO)) {
+                return ResponseEntity.ok(CommonResponse.success(null));
+            } else {
+                return ResponseEntity.ok(CommonResponse.error(null));
+
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .internalServerError()
+                    .body(CommonResponse.error("OTP 조회 중 오류가 발생했습니다: " + e.getMessage()));
+
+        } catch (Exception e) {
+            return ResponseEntity
+                    .internalServerError()
+                    .body(CommonResponse.error("알 수 없는 서버 오류가 발생했습니다."));
+        }
+    }
+
     // QR코드 생성을 위한 정보를 반환
     @PostMapping("/setup")
     public ResponseEntity<CommonResponse<OtpRegistrationResponse>> generateSecret(@RequestBody ClientVO clientVO, HttpSession session) {

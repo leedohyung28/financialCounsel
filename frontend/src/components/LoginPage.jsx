@@ -79,10 +79,30 @@ export default function LoginPage() {
         const result = await clientApi.loginClient(email, password);
         const { success, data } = result;
 
+        console.log(success && data.resultCode === 0);
+
         if (success && data.resultCode === 0) {
-          // 로그인 성공 시 바로 이동하지 않고 OTP 단계로 전환
-          setStep(3);
-          setErrorMsg("");
+          // OTP 등록 여부 확인
+          const otpCheck = await clientApi.validSecretKey(email);
+
+          if (otpCheck.success) {
+            // OTP 키가 이미 존재하는 경우 -> 인증 번호 입력 화면으로
+            setStep(3);
+            setErrorMsg("");
+          } else {
+            // OTP 키가 없는 경우 -> 자동으로 등록 프로세스 시작
+            alert("등록된 OTP가 없습니다. 등록 화면으로 이동합니다.");
+            const setupRes = await clientApi.setupOtp(email);
+            if (setupRes.success) {
+              setOtpData({
+                secretKey: setupRes.data.secretKey,
+                qrCodeUrl: setupRes.data.qrCodeUrl,
+              });
+              setStep(4); // 등록 화면으로 자동 이동
+            } else {
+              triggerError("OTP 정보를 생성할 수 없습니다.");
+            }
+          }
         } else {
           triggerError(data?.message || "로그인 정보가 올바르지 않습니다.");
         }

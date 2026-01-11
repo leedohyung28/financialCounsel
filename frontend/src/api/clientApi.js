@@ -67,11 +67,20 @@ export const clientApi = {
     return response.data;
   },
 
+  // 시크릿키 업데이트
   updateSecretKey: async (userId, secretKey, code) => {
     const response = await api.post("/api/otp/update", {
       email: userId,
       secretKey,
       code,
+    });
+    return response.data;
+  },
+
+  // 시크릿키 존재 여부 확인
+  validSecretKey: async (userId) => {
+    const response = await api.post("/api/otp/valid", {
+      email: userId,
     });
     return response.data;
   },

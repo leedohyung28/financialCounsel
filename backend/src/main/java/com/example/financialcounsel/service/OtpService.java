@@ -10,6 +10,7 @@ import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -25,6 +26,19 @@ public class OtpService {
         this.gAuth = gAuth;
         this.clientService = clientService;
         this.clientRepository = clientRepository;
+    }
+
+    /**
+     * 시크릿키 존재 여부 확인
+     * @param clientVO 조회 할 직원의 ID
+     * @return boolean 객체
+     */
+    @Transactional
+    public boolean validSecretKey(ClientVO clientVO) {
+        ClientVO client = clientRepository.findByEmail(clientVO.getEmail())
+                .orElseThrow(() -> new RuntimeException("해당 이메일로 가입된 계정을 찾을 수 없습니다: " + clientVO.getEmail()));
+
+        return StringUtils.hasText(client.getSecretOtpKey());
     }
 
     /**
