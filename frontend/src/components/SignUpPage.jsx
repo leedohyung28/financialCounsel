@@ -1,4 +1,4 @@
-import { faCamera } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
@@ -93,21 +93,28 @@ export default function SignupPage() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 외부 함수 호출 (파일 객체와 제한 용량 전달)
     if (!checkFileSize(file, 10)) {
-      e.target.value = ""; // 검증 실패 시 input 초기화
+      e.target.value = "";
       return;
     }
 
-    // 파일 객체를 form에 저장
     setForm((prev) => ({ ...prev, profileImage: file }));
 
-    // 브라우저 미리보기 URL 생성
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewUrl(reader.result);
     };
     reader.readAsDataURL(file);
+  };
+
+  // 사진 삭제 핸들러
+  const handleRemoveImage = () => {
+    setForm((prev) => ({ ...prev, profileImage: null })); // 파일 객체 삭제
+    setPreviewUrl(null); // 미리보기 URL 삭제
+
+    // input value 초기화 (같은 파일을 다시 올릴 때를 대비)
+    const fileInput = document.getElementById("profile-input");
+    if (fileInput) fileInput.value = "";
   };
 
   // 아이디 중복 확인
@@ -297,9 +304,21 @@ export default function SignupPage() {
                     <span className="user-icon">👤</span>
                   </div>
                 )}
-                <label htmlFor="profile-input" className="camera-icon-label">
-                  <FontAwesomeIcon icon={faCamera} />
-                </label>
+                <div className="profile-icons-group">
+                  <label htmlFor="profile-input" className="camera-icon-label">
+                    <FontAwesomeIcon icon={faCamera} />
+                  </label>
+                  {form.profileImage && (
+                    <button
+                      type="button"
+                      className="remove-image-btn"
+                      onClick={handleRemoveImage}
+                      title="사진 삭제"
+                    >
+                      <FontAwesomeIcon icon={faTimesCircle} />
+                    </button>
+                  )}
+                </div>
               </div>
               <input
                 id="profile-input"
@@ -308,8 +327,14 @@ export default function SignupPage() {
                 onChange={handleImageChange}
                 style={{ display: "none" }}
               />
-              <p className="upload-info-text">
-                프로필 사진을 등록해주세요 (선택)
+              <p
+                className={`upload-info-text ${
+                  form.profileImage ? "file-selected" : ""
+                }`}
+              >
+                {form.profileImage
+                  ? form.profileImage.name
+                  : "프로필 사진을 등록해주세요 (선택)"}
               </p>
             </div>
 
@@ -364,20 +389,19 @@ export default function SignupPage() {
               <div className="field-group">
                 <label className="field-label">비밀번호 확인</label>
                 <input
-                  name="passwordConfirm" // 이 이름이 onChange의 e.target.name과 일치해야 함
+                  name="passwordConfirm"
                   type="password"
-                  disabled={!isPwValid}
                   className={`field-input ${
-                    !isPwValid ? "input-disabled" : ""
-                  } ${isPwError ? "error-border shake" : ""}`}
-                  placeholder={!isPwValid ? "비밀번호를 먼저 입력하세요" : ""}
+                    isPwError ? "error-border shake" : ""
+                  }`}
+                  placeholder="비밀번호를 한 번 더 입력하세요"
                   value={passwordConfirm}
-                  onChange={onChange} // 위에서 수정한 onChange 호출
+                  onChange={onChange}
                 />
                 {pwErrorMsg && (
                   <div
                     className={`message-text ${
-                      form.password === passwordConfirm
+                      form.password === passwordConfirm && form.password !== ""
                         ? "success-blue"
                         : "error-red"
                     }`}

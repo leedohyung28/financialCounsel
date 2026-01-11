@@ -365,6 +365,12 @@
   max-width: 400px;
 }
 
+.message-text {
+  font-size: 12px;
+  margin-top: 4px;
+  min-height: 18px;
+}
+
 /* 아이디 성공 메시지 */
 .success-blue {
   color: #007bff !important; /* 파란색 */
@@ -385,4 +391,50 @@
 .input-disabled::placeholder {
   color: #adb5bd;
   font-size: 11px;
+}
+
+/* 아이콘들을 감싸는 컨테이너 */
+.profile-icons-group {
+  position: absolute;
+  bottom: 5px;
+  right: -10px; /* 위치는 디자인에 따라 조정 */
+  display: flex;
+  gap: 8px;
+}
+
+/* 카메라 아이콘 스타일 */
+.camera-icon-label {
+  background: #1a73e8;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 삭제 아이콘(X) 스타일 */
+.remove-image-btn {
+  background: white;
+  color: #d93025; /* 구글 레드 색상 */
+  border: none;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.remove-image-btn:hover {
+  transform: scale(1.1);
+  color: #b3261e;
 }
