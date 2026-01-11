@@ -10,7 +10,7 @@ export default function Header() {
   const { isDark, toggleTheme } = useTheme();
   const { goToLogin } = useNavigation();
 
-  const [timeLeft, setTimeLeft] = useState("03:00");
+  const [timeLeft, setTimeLeft] = useState("10:00");
   const [sessionTick, setSessionTick] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVerifyOpen, setIsVerifyOpen] = useState(false);
@@ -53,7 +53,7 @@ export default function Header() {
   }, [goToLogin, sessionTick]);
 
   const handleExtend = () => {
-    extendSession(3.01);
+    extendSession(10.01);
     setSessionTick((prev) => prev + 1);
     setIsMenuOpen(false);
   };

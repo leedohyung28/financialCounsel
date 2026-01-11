@@ -1,30 +1,24 @@
-import React, { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
-import "../styles/SignUpPage.css";
-import "../styles/SignUpComplete.css";
-import "../styles/PhoneCertify.css";
-import "react-datepicker/dist/react-datepicker.css";
-import "./common/PhoneAuth";
-import PhoneAuth from "./common/PhoneAuth";
-import {
-  formatTime,
-  handleSendOtp,
-  handleVerifyOtp,
-  onVerifyOtp,
-} from "../context/PhoneAuth";
-import { useTheme } from "../context/ThemeContext";
-import { useNavigation } from "../hooks/useNavigation";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { clientApi } from "../api/clientApi";
 import {
   checkFileSize,
   emailRegex,
   formatBirth,
   formatPhone,
   pwRegex,
-  validateBirth,
 } from "../context/FormatUtils";
-import { clientApi } from "../api/clientApi";
+import { handleRandomName } from "../context/RandomGenerator";
+import { useTheme } from "../context/ThemeContext";
+import { useNavigation } from "../hooks/useNavigation";
+import "../styles/PhoneCertify.css";
+import "../styles/SignUpComplete.css";
+import "../styles/SignUpPage.css";
+import "./common/PhoneAuth";
+import OtpSetup from "./common/OtpSetup";
 
 export default function SignupPage() {
   const { isDark, toggleTheme } = useTheme();
@@ -41,41 +35,50 @@ export default function SignupPage() {
     password: "",
     phone: "",
     otp: "",
+    secretKey: "",
     profileImage: null,
   });
 
   const [isIdVerified, setIsIdVerified] = useState(false); // 아이디 중복확인 여부
+  const [idErrorMsg, setIdErrorMsg] = useState("");
   const [pwErrorMsg, setPwErrorMsg] = useState("");
+  const [nameErrorMsg, setNameErrorMsg] = useState("");
   const [isPwError, setIsPwError] = useState(false);
   const [isIdError, setIsIdError] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [timer, setTimer] = useState(180); // 3분 (180초)
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [isNameError, setIsNameError] = useState(false);
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [otpData, setOtpData] = useState({ secretKey: "", qrCodeUrl: "" }); // OTP 정보 저장
 
-  // 타이머 기능
+  const isPwValid = pwRegex.test(form.password);
+
   useEffect(() => {
-    let interval;
-    if (isOtpSent && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-    } else if (timer === 0) {
-      clearInterval(interval);
+    if (passwordConfirm === "") {
+      setPwErrorMsg("");
+    } else if (form.password !== passwordConfirm) {
+      setPwErrorMsg("비밀번호가 일치하지 않습니다.");
+    } else {
+      setPwErrorMsg("비밀번호가 일치합니다."); // 혹은 빈 값("")
     }
-    return () => clearInterval(interval);
-  }, [isOtpSent, timer]);
+  }, [form.password, passwordConfirm]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
 
-    // 휴대폰 번호 자동 포매팅
+    // 1. 비밀번호 확인 필드 처리
+    if (name === "passwordConfirm") {
+      setPasswordConfirm(value);
+      return;
+    }
+
+    // 2. 휴대폰 번호 자동 포매팅
     if (name === "phone") {
       setForm((prev) => ({ ...prev, [name]: formatPhone(value) }));
       return;
     }
 
-    // 생년월일 자동 포매팅 (텍스트 입력 시)
+    // 3. 생년월일 처리
     if (name === "birthText") {
       const formatted = formatBirth(value);
       setForm((prev) => ({ ...prev, birth: formatted }));
@@ -109,6 +112,7 @@ export default function SignupPage() {
 
   // 아이디 중복 확인
   const handleCheckId = async () => {
+    setIdErrorMsg("");
     if (!emailRegex.test(form.userId)) {
       triggerIdError("유효한 이메일 형식이 아닙니다.");
       return;
@@ -116,10 +120,11 @@ export default function SignupPage() {
     try {
       const { success, data } = await clientApi.validEmail(form.userId);
       if (success && data.resultCode === 0) {
-        alert("사용 가능한 아이디입니다.");
+        setIdErrorMsg("사용 가능한 아이디입니다.");
         setIsIdVerified(true);
       } else {
         triggerIdError("이미 사용 중인 아이디입니다.");
+        setIsIdVerified(false);
       }
     } catch (error) {
       triggerIdError("중복 확인 중 오류가 발생했습니다.");
@@ -128,12 +133,21 @@ export default function SignupPage() {
 
   // 비밀번호 확인 검사 (커서가 옮겨졌을 때 - onBlur)
   const handlePwBlur = () => {
-    if (form.passwordConfirm && form.password !== form.passwordConfirm) {
+    if (passwordConfirm && form.password !== passwordConfirm) {
       triggerPwError("비밀번호가 일치하지 않습니다.");
     } else {
       setPwErrorMsg("");
-      setIsPwError(false);
     }
+  };
+
+  const handleOtpInputChange = (value) => {
+    setForm((prev) => ({ ...prev, otp: value }));
+  };
+
+  const triggerIdError = (msg) => {
+    setIdErrorMsg(msg);
+    setIsIdError(true);
+    setTimeout(() => setIsIdError(false), 500);
   };
 
   const triggerPwError = (msg) => {
@@ -142,40 +156,38 @@ export default function SignupPage() {
     setTimeout(() => setIsPwError(false), 500);
   };
 
-  const triggerIdError = (msg) => {
-    alert(msg);
-    setIsIdError(true);
-    setTimeout(() => setIsIdError(false), 500);
-  };
-
   // [다음] 버튼 클릭 시 (1단계 -> 2단계)
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (!isIdVerified) {
-      alert("아이디 중복 확인을 해주세요.");
+      triggerIdError("아이디 중복 확인을 해주세요.");
       return;
     }
-    if (form.password !== form.passwordConfirm) {
+    if (!isPwValid) {
+      triggerPwError("비밀번호 규칙을 먼저 확인해주세요.");
+      return;
+    }
+    if (form.password !== passwordConfirm) {
       triggerPwError("비밀번호가 일치하지 않습니다.");
       return;
     }
-    if (!emailRegex.test(form.userId)) {
-      alert("아이디 형식이 올바르지 않습니다.");
-      return;
-    }
-    if (!pwRegex.test(form.password)) {
-      alert("비밀번호 규칙을 확인해주세요.");
+    if (!form.name || form.name.trim() === "") {
+      setNameErrorMsg("이름은 필수 입력 항목입니다.");
       return;
     }
 
-    // 생년월일 입력이 있는 경우 유효성 검사 추가
-    if (form.birth && !validateBirth(form.birth)) {
-      alert(
-        "생년월일 형식이 올바르지 않거나 유효하지 않은 날짜입니다. (예: 1990-01-01)"
-      );
-      return;
+    try {
+      const response = await clientApi.setupOtp(form.userId);
+      if (response.success) {
+        setOtpData({
+          secretKey: response.data.secretKey,
+          qrCodeUrl: response.data.qrCodeUrl,
+        });
+        setForm((prev) => ({ ...prev, secretKey: response.data.secretKey }));
+        setStep(2);
+      }
+    } catch (error) {
+      setIdErrorMsg("OTP 설정 중 오류가 발생했습니다.");
     }
-
-    setStep(2);
   };
 
   // [최종 가입 요청] 함수 추가
@@ -187,11 +199,13 @@ export default function SignupPage() {
       formData.append("email", form.userId);
       formData.append("password", form.password);
       if (form.name) formData.append("name", form.name);
-      formData.append("phoneNum", form.phone.replace(/[^0-9]/g, ""));
+      if (form.phone)
+        formData.append("phoneNum", form.phone.replace(/[^0-9]/g, ""));
       if (form.birthday) formData.append("birthday", form.birthday);
       if (form.gender) formData.append("sex", form.gender);
       if (form.region) formData.append("location", form.region);
       if (form.profileImage) formData.append("image", form.profileImage);
+      formData.append("secretOtpKey", form.secretKey);
 
       // API 호출
       const { success, message } = await clientApi.signUpClient(formData);
@@ -206,6 +220,31 @@ export default function SignupPage() {
       const errorMessage =
         error.response?.data?.message || "서버 통신 중 오류가 발생했습니다.";
       alert(errorMessage);
+    }
+  };
+
+  const handleOtpVerify = async () => {
+    if (form.otp.length !== 6) {
+      alert("6자리 숫자를 정확히 입력해주세요.");
+      return;
+    }
+
+    try {
+      // 이전에 만든 /api/2fa/verify 엔드포인트 활용
+      const response = await clientApi.verifyInitOtp(
+        form.userId,
+        parseInt(form.otp)
+      );
+
+      if (response.success) {
+        alert("OTP 인증에 성공하였습니다! 회원가입을 완료합니다.");
+        handleSignupSubmit(); // 최종 회원가입 처리
+      } else {
+        alert("인증번호가 일치하지 않습니다.");
+      }
+    } catch (error) {
+      alert("인증 처리 중 오류가 발생했습니다.");
+      setStep(1);
     }
   };
 
@@ -280,7 +319,6 @@ export default function SignupPage() {
                 <div className="input-with-button">
                   <input
                     name="userId"
-                    disabled={isIdVerified}
                     className={`field-input flex-1 ${
                       isIdError ? "error-border shake" : ""
                     } ${isIdVerified ? "verified-input" : ""}`}
@@ -288,62 +326,105 @@ export default function SignupPage() {
                     onChange={(e) => {
                       onChange(e);
                       setIsIdVerified(false);
+                      setIdErrorMsg("");
                     }}
                     placeholder="example@domain.com"
                   />
                   <button
                     type="button"
-                    disabled={isIdVerified}
-                    className={`inner-check-btn ${
-                      isIdVerified ? "verified-btn" : ""
-                    }`}
                     onClick={handleCheckId}
+                    className="inner-check-btn"
                   >
                     {isIdVerified ? "확인됨" : "확인"}
                   </button>
                 </div>
+                {idErrorMsg && (
+                  <div
+                    className={`message-text ${
+                      isIdVerified ? "success-blue" : "error-red"
+                    }`}
+                  >
+                    {idErrorMsg}
+                  </div>
+                )}
               </div>
               <div className="field-group">
                 <label className="field-label">비밀번호</label>
-                <div className="tooltip-container">
-                  <input
-                    name="password"
-                    type="password"
-                    className="field-input"
-                    value={form.password}
-                    onChange={onChange}
-                  />
-                  <span className="tooltip-text">
-                    • 8자 이상 작성
-                    <br />• 영문, 숫자, 특수문자 포함
-                  </span>
-                </div>
+                <input
+                  name="password"
+                  type="password"
+                  className="field-input"
+                  value={form.password}
+                  onChange={(e) => {
+                    onChange(e);
+                    setPwErrorMsg("");
+                  }}
+                />
               </div>
-
               <div className="field-group">
                 <label className="field-label">비밀번호 확인</label>
                 <input
-                  name="passwordConfirm"
+                  name="passwordConfirm" // 이 이름이 onChange의 e.target.name과 일치해야 함
                   type="password"
-                  className={`field-input ${pwErrorMsg ? "error-border" : ""} ${
-                    isPwError ? "shake" : ""
-                  }`}
-                  value={form.passwordConfirm}
-                  onChange={onChange}
-                  onBlur={handlePwBlur}
+                  disabled={!isPwValid}
+                  className={`field-input ${
+                    !isPwValid ? "input-disabled" : ""
+                  } ${isPwError ? "error-border shake" : ""}`}
+                  placeholder={!isPwValid ? "비밀번호를 먼저 입력하세요" : ""}
+                  value={passwordConfirm}
+                  onChange={onChange} // 위에서 수정한 onChange 호출
                 />
-                {pwErrorMsg && <div className="error-msg">{pwErrorMsg}</div>}
+                {pwErrorMsg && (
+                  <div
+                    className={`message-text ${
+                      form.password === passwordConfirm
+                        ? "success-blue"
+                        : "error-red"
+                    }`}
+                  >
+                    {pwErrorMsg}
+                  </div>
+                )}
+              </div>
+              <div className="field-group full-width">
+                <label className="field-label">이름</label>
+                <div className="input-with-button">
+                  <input
+                    name="name"
+                    className={`field-input flex-1 ${
+                      isNameError ? "error-border shake" : ""
+                    }`}
+                    value={form.name}
+                    onChange={(e) => {
+                      onChange(e);
+                      setNameErrorMsg("");
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="inner-check-btn"
+                    onClick={() => handleRandomName(setForm, setIsNameError)}
+                  >
+                    랜덤 생성
+                  </button>
+                </div>
+                {nameErrorMsg && (
+                  <div className="message-text error-red">{nameErrorMsg}</div>
+                )}
               </div>
 
-              <div className="field-group">
+              <div className="field-group full-width">
                 <label className="field-label">
-                  이름 <span className="optional">(선택사항)</span>
+                  휴대폰 번호<span className="optional">(선택사항)</span>
                 </label>
                 <input
-                  name="name"
+                  name="phone"
+                  type="text"
                   className="field-input"
-                  value={form.name}
-                  onChange={onChange}
+                  placeholder="010-0000-0000"
+                  value={form.phone}
+                  onChange={onChange} // 기존 자동 포매팅 로직 활용
+                  maxLength="13"
                 />
               </div>
               <div className="field-group">
@@ -418,39 +499,14 @@ export default function SignupPage() {
             </div>
           </>
         ) : (
-          /* 2) 전화번호 인증 폼 */
-          <>
-            <div className="title-area">
-              <h1 className="title-main">본인 인증</h1>
-              <div className="title-sub">
-                전화번호를 통해 인증을 진행해주세요.
-              </div>
-            </div>
-            <PhoneAuth
-              form={form}
-              onChange={onChange}
-              isOtpSent={isOtpSent}
-              handleSendOtp={() =>
-                handleSendOtp(form.phone, setIsOtpSent, setTimer)
-              }
-              handleVerifyOtp={async () => {
-                const success = await onVerifyOtp(form.otp, timer);
-                if (success) {
-                  handleSignupSubmit();
-                  alert("인증에 성공하였습니다! 회원가입을 완료합니다.");
-                } else {
-                  alert("인증번호가 일치하지 않거나 시간이 만료되었습니다.");
-                }
-              }}
-              timer={timer}
-              formatTime={formatTime}
-            />
-            <div className="actions-bottom" style={{ marginTop: "40px" }}>
-              <button className="link-btn" onClick={() => setStep(1)}>
-                이전으로
-              </button>
-            </div>
-          </>
+          <OtpSetup
+            otpData={otpData}
+            otpValue={form.otp}
+            onOtpChange={handleOtpInputChange}
+            onVerify={handleOtpVerify}
+            onBack={() => setStep(1)}
+            isRegistration={true}
+          />
         )}
       </div>
     </div>

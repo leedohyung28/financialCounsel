@@ -18,3 +18,32 @@ export const formatTime = (seconds) => {
   const s = seconds % 60;
   return `${m}:${s < 10 ? `0${s}` : s}`;
 };
+
+// [전송 / 재전송] 버튼
+export const handleSendOtp = (phoneNum, setIsOtpSent, setTimer) => {
+  if (!phoneNum) {
+    alert("전화번호를 입력해주세요.");
+    return;
+  }
+  setIsOtpSent(true);
+  setTimer(180);
+  alert("인증번호가 발송되었습니다.");
+};
+
+// [인증 확인 핸들러] 수정
+export const onVerifyOtp = async (otp, timer) => {
+  // 1. 먼저 OTP 번호가 입력되었는지 확인
+  if (!otp) {
+    alert("인증번호를 입력해주세요.");
+    return;
+  }
+
+  // 인증 시도 (기존 handleVerifyOtp 로직 활용)
+  const isSuccess = await handleVerifyOtp(timer, otp, () => {});
+
+  if (isSuccess) {
+    return true;
+  } else {
+    return false;
+  }
+};

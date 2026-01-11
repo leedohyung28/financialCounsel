@@ -15,4 +15,5 @@ public interface ClientRepository extends MongoRepository<ClientVO, String> {
      * @return ClientVO 객체
      */
     Optional<ClientVO> findByEmail(String email);
+
 }

@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { setSession } from "../utils/session";
 import { clientApi } from "../api/clientApi";
+import OtpSetup from "./common/OtpSetup";
 
 export default function LoginPage() {
   const { goToFindAccount, goToSignUp, goToAddressHome } = useNavigation();
@@ -17,70 +18,96 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState(""); // OTP 상태 추가
   const [showPassword, setShowPassword] = useState(false);
+  const [otpData, setOtpData] = useState({ secretKey: "", qrCodeUrl: "" });
 
   const [loading, setLoading] = useState(false);
-  const [emailError, setEmailError] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const [isError, setIsError] = useState(false);
+
+  // OTP 재등록 시작 핸들러
+  const handleResetOtp = async () => {
+    const confirmReset = window.confirm(
+      "현재 OTP가 삭제됩니다. 정말로 재등록 하시겠습니까?"
+    );
+    if (!confirmReset) return;
+
+    setLoading(true);
+    try {
+      const response = await clientApi.setupOtp(email);
+      if (response.success) {
+        setOtpData({
+          secretKey: response.data.secretKey,
+          qrCodeUrl: response.data.qrCodeUrl,
+        });
+        setErrorMsg("");
+        setIsError(false);
+        setOtp(""); // 입력칸 초기화
+        setStep(4); // 재등록 화면으로 이동
+      }
+    } catch (error) {
+      triggerError("OTP 정보를 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // '다음' 또는 '로그인' 버튼 클릭 핸들러
   const handleNextStep = async () => {
     if (step === 1) {
-      if (email.trim().length === 0) {
-        alert("이메일을 입력해주세요.");
-        return;
-      }
+      /* --- STEP 1: 이메일 확인 --- */
+      if (!email.trim()) return alert("이메일을 입력해주세요.");
 
       setLoading(true);
-      setEmailError("");
-      setIsError(false);
+      setErrorMsg("");
       try {
-        // API 결과
-        const { success, message, data } = await clientApi.validId(email);
-
-        // data(LoginResponse) 내부의 resultCode 확인
-        if (success && data.resultCode === 0) {
-          setStep(2);
-        } else {
-          // 이메일이 없거나 서버 에러인 경우
-          triggerError(data?.message || message || "계정을 찾을 수 없습니다.");
-        }
+        const { success, data } = await clientApi.validId(email);
+        if (success && data.resultCode === 0) setStep(2);
+        else triggerError(data?.message || "계정을 찾을 수 없습니다.");
       } catch (error) {
-        // Axios 에러 처리 (상태코드 400 등)
-        const errorMsg =
-          error.response?.data?.message ||
-          "이메일 확인 중 오류가 발생했습니다.";
-        triggerError(errorMsg);
+        triggerError("이메일 확인 중 오류가 발생했습니다.");
       } finally {
         setLoading(false);
       }
-    } else {
+    } else if (step === 2) {
       // --- STEP 2: 암호화 및 로그인 로직 ---
-      if (password.trim().length === 0) {
-        triggerError("비밀번호를 입력해주세요.");
-        return;
-      }
+      if (!password.trim()) return triggerError("비밀번호를 입력해주세요.");
 
       setLoading(true);
       try {
         const result = await clientApi.loginClient(email, password);
+        const { success, data } = result;
 
-        const { success, message, data } = result;
-
-        // success가 true이고, 로그인 결과 코드가 0일 때 성공
         if (success && data.resultCode === 0) {
-          setSession("userSession", email, 3);
-          goToAddressHome();
+          // 로그인 성공 시 바로 이동하지 않고 OTP 단계로 전환
+          setStep(3);
+          setErrorMsg("");
         } else {
-          // 비밀번호 불일치 등 (data.message에 "로그인에 실패했습니다" 등이 담김)
-          triggerError(
-            data?.message || message || "로그인 정보가 올바르지 않습니다."
-          );
+          triggerError(data?.message || "로그인 정보가 올바르지 않습니다.");
         }
       } catch (error) {
-        const errorMsg =
-          error.response?.data?.message || "로그인 중 오류가 발생했습니다.";
-        triggerError(errorMsg);
+        triggerError("로그인 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    } else if (step === 3) {
+      /* --- STEP 3: OTP 인증 --- */
+      if (otp.length !== 6)
+        return triggerError("6자리 인증번호를 입력해주세요.");
+
+      setLoading(true);
+      try {
+        // 기존 SignUp에서 사용했던 verifyOtp API 활용
+        const response = await clientApi.verifyOtp(email, parseInt(otp));
+        if (response.success) {
+          setSession("userSession", email, 10);
+          goToAddressHome();
+        } else {
+          triggerError("인증번호가 일치하지 않습니다.");
+        }
+      } catch (error) {
+        triggerError("OTP 인증 중 오류가 발생했습니다.");
       } finally {
         setLoading(false);
       }
@@ -88,30 +115,41 @@ export default function LoginPage() {
   };
   // 에러 발생 시 애니메이션 초기화를 위한 함수
   const triggerError = (msg) => {
-    setEmailError(msg);
+    setErrorMsg(msg);
     setIsError(true);
-    // 0.5초(애니메이션 시간) 후 클래스 제거 (재반복 가능하도록)
     setTimeout(() => setIsError(false), 500);
-  };
-
-  // 입력 시 에러 메시지 초기화
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    if (emailError) setEmailError("");
-  };
-
-  // 이메일 수정하고 싶을 때 되돌아가기
-  const handleBackToEmail = () => {
-    setStep(1);
-    setPassword("");
-    setEmailError("");
-    setIsError(false);
   };
 
   // 엔터키 이벤트 처리
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleNextStep();
+    if (e.key === "Enter") handleNextStep();
+  };
+
+  // 재등록 화면에서 인증 버튼 클릭 시 (가입 시와 동일한 verifyOtp 사용)
+  const handleReRegistrationVerify = async () => {
+    if (otp.length !== 6) return alert("6자리 인증번호를 입력해주세요.");
+
+    setLoading(true);
+    try {
+      const response = await clientApi.updateSecretKey(
+        email,
+        otpData.secretKey,
+        parseInt(otp)
+      );
+
+      if (response.success) {
+        alert(
+          "OTP 재등록이 완료되었습니다. 새로운 코드로 로그인을 진행합니다."
+        );
+        setOtp("");
+        setStep(3);
+      } else {
+        alert("인증번호가 일치하지 않습니다. QR 코드를 다시 확인해주세요.");
+      }
+    } catch (error) {
+      alert("인증 처리 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,16 +166,32 @@ export default function LoginPage() {
       </div>
 
       <div className="login-card">
-        <div className="title-area">
-          <h1 className="title-main">{step === 1 ? "로그인" : "환영합니다"}</h1>
-          <div className="title-sub">
-            {step === 1 ? "계정 사용" : "비밀번호를 입력하세요"}
+        {step !== 4 && (
+          <div className="title-area">
+            <h1 className="title-main">
+              {step === 1 ? "로그인" : step === 2 ? "환영합니다" : "2단계 인증"}
+            </h1>
+            <div className="title-sub">
+              {step === 1
+                ? "계정 사용"
+                : step === 2
+                ? "비밀번호 입력"
+                : "Google Authenticator 코드를 입력하세요"}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* 2단계일 때, 입력한 이메일을 보여주는 칩 (구글 스타일) */}
-        {step === 2 && (
-          <div className="email-chip" onClick={handleBackToEmail}>
+        {step >= 2 && step !== 4 && (
+          <div
+            className="email-chip"
+            onClick={() => {
+              setStep(1);
+              setErrorMsg("");
+              setIsError(false);
+              setPassword("");
+              setOtp("");
+            }}
+          >
             <span className="chip-icon">👤</span>
             <span className="chip-text">{email}</span>
             <span className="chip-arrow">▼</span>
@@ -145,53 +199,32 @@ export default function LoginPage() {
         )}
 
         <div className="input-area">
-          {step === 1 ? (
-            /* STEP 1: 이메일 입력 */
+          {step === 1 && (
             <>
-              <label className="field-label" htmlFor="email">
-                이메일 또는 휴대전화
-              </label>
+              <label className="field-label">이메일 또는 휴대전화</label>
               <input
-                id="email"
-                className={`field-input ${emailError ? "error-border" : ""} ${
+                className={`field-input ${errorMsg ? "error-border" : ""} ${
                   isError ? "shake" : ""
                 }`}
                 value={email}
-                onChange={handleEmailChange}
+                onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={handleKeyDown}
                 autoFocus
               />
-              {emailError && <div className="error-msg">{emailError}</div>}
-              {!emailError}
-              <button
-                type="button"
-                className="link-btn"
-                onClick={goToFindAccount}
-              >
-                이메일을 잊으셨나요?
-              </button>
             </>
-          ) : (
-            /* STEP 2: 비밀번호 입력 */
+          )}
+
+          {step === 2 && (
             <>
-              <label className="field-label" htmlFor="password">
-                비밀번호
-              </label>
+              <label className="field-label">비밀번호</label>
               <div className={`password-wrapper ${isError ? "shake" : ""}`}>
                 <input
-                  id="password"
                   type={showPassword ? "text" : "password"}
                   className={`field-input password-input ${
-                    emailError ? "error-border" : ""
+                    errorMsg ? "error-border" : ""
                   }`}
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (emailError) {
-                      setEmailError("");
-                      setIsError(false);
-                    }
-                  }}
+                  onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={handleKeyDown}
                   autoFocus
                 />
@@ -203,28 +236,80 @@ export default function LoginPage() {
                   <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
                 </button>
               </div>
-              {emailError && <div className="error-msg">{emailError}</div>}
             </>
+          )}
+
+          {step === 3 && (
+            <>
+              <label className="field-label">인증 코드</label>
+              <input
+                type="text"
+                maxLength="6"
+                className={`field-input ${errorMsg ? "error-border" : ""} ${
+                  isError ? "shake" : ""
+                }`}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                onKeyDown={(e) => e.key === "Enter" && handleNextStep()}
+                autoFocus
+              />
+              <div style={{ marginTop: "15px", textAlign: "center" }}>
+                <span
+                  className="link-btn-blue"
+                  style={{
+                    color: "#1a73e8",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    textDecoration: "underline",
+                  }}
+                  onClick={handleResetOtp}
+                >
+                  OTP를 새로 등록하시겠습니까?
+                </span>
+              </div>
+            </>
+          )}
+          {step === 4 && (
+            <OtpSetup
+              otpData={otpData}
+              otpValue={otp}
+              onOtpChange={setOtp}
+              onVerify={handleReRegistrationVerify}
+              onBack={() => setStep(3)}
+              isRegistration={false}
+            />
+          )}
+
+          {errorMsg && step !== 4 && (
+            <div className="error-msg">{errorMsg}</div>
           )}
         </div>
 
-        <div className="actions-bottom">
-          {step === 1 ? (
-            <button type="button" className="link-btn" onClick={goToSignUp}>
-              계정 만들기
+        {step !== 4 && (
+          <div className="actions-bottom">
+            <button
+              type="button"
+              className="link-btn"
+              onClick={step === 3 ? () => setStep(2) : goToSignUp}
+            >
+              {step === 3 ? "뒤로 가기" : "계정 만들기"}
             </button>
-          ) : (
-            <div />
-          )}
-          <button
-            type="button"
-            className="primary-btn"
-            onClick={handleNextStep}
-            disabled={loading}
-          >
-            {loading ? "처리 중..." : step === 1 ? "다음" : "로그인"}
-          </button>
-        </div>
+            <button
+              type="button"
+              className="primary-btn"
+              onClick={handleNextStep}
+              disabled={loading}
+            >
+              {loading
+                ? "처리 중..."
+                : step === 1
+                ? "다음"
+                : step === 2
+                ? "로그인"
+                : "인증"}
+            </button>
+          </div>
+        )}
       </div>
 
       <footer className="footer">

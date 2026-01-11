@@ -8,15 +8,12 @@ import com.example.financialcounsel.global.utils.EncryptUtils;
 import com.example.financialcounsel.global.utils.ImageUtils;
 import com.example.financialcounsel.global.utils.ValidationUtils;
 import com.example.financialcounsel.repository.ClientRepository;
-import com.mongodb.DuplicateKeyException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -62,6 +59,23 @@ public class ClientService {
                 })
                 // [코드 9] Client 실패
                 .orElseGet(() -> LoginResponse.of(9, "존재하지 않는 이메일입니다."));
+    }
+
+    /**
+     * 직원 단건 조회 (OTP)
+     * @param clientVO 조회 할 직원의 ID
+     * @return ClientVO 객체
+     */
+    @Transactional(readOnly = true)
+    public String selectClientOtp(ClientVO clientVO) {
+        // InputVO 검증
+        // 직원ID 필수 입력 검증
+        ValidationUtils.validateSelectedFields(clientVO, List.of("email"), "조회");
+
+        ClientVO entity = clientRepository.findByEmail(clientVO.getEmail())
+                .orElseThrow(() -> new RuntimeException("해당 이메일의 직원을 찾을 수 없습니다."));
+
+        return entity.getSecretOtpKey();
     }
 
     /**
@@ -144,7 +158,6 @@ public class ClientService {
     public ClientVO updateClient(ClientVO clientVO) {
         ValidationUtils.validateNonNullFields(clientVO, "수정");
         // 직원명 필수 입력 검증
-        ValidationUtils.validateNonNullFields(clientVO, "등록");
         // 비밀번호 암호화 및 설정
         String encryptedInputPassword = EncryptUtils.encryptPassword(clientVO.getPassword());
         clientVO.setPassword(encryptedInputPassword);
@@ -159,6 +172,21 @@ public class ClientService {
             }
             return clientRepository.save(existingClient);
         }).orElseThrow(() -> new RuntimeException("수정할 직원 정보를 찾을 수 없습니다."));
+    }
+
+    /**
+     *
+     * 직원 수정 (Update)
+     * @param clientVO 객체
+     * @return ClientVO 객체
+     */
+    public ClientVO updateClientOtpSecretKey(ClientVO clientVO) {
+        // 직원명, OTP 시크릿 키 필수 입력 검증
+        ValidationUtils.validateSelectedFields(clientVO, List.of("email", "secretOtpKey"), "수정");
+
+        return clientRepository.findByEmail(clientVO.getEmail()).map(existingClient -> {
+            return clientRepository.save(existingClient);
+        }).orElseThrow(() -> new RuntimeException("OTP를 설정할 직원 정보를 찾을 수 없습니다."));
     }
 
     /**

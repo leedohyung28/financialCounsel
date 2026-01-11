@@ -35,8 +35,7 @@ public class ClientVO {
     private String password;
 
     @Getter
-    @Setter
-    @NonNull @FieldName("휴대폰 번호")
+    @Setter @FieldName("휴대폰 번호")
     private String phoneNum;
 
     @Getter
@@ -68,6 +67,11 @@ public class ClientVO {
     @Setter
     @NonNull @FieldName("사용여부")
     private Boolean useYn;
+
+    @Getter
+    @Setter
+    @NonNull @FieldName("OTP 시크릿 키")
+    private String secretOtpKey;
 
     @Setter
     @NonNull @FieldName("생성 일시")

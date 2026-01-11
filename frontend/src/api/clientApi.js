@@ -40,8 +40,38 @@ export const clientApi = {
 
   // 회원 정보 수정
   updateProfile: async (formData) => {
-    const response = await api.put("/api/client/update", formData, {
+    const response = await api.post("/api/client/update", formData, {
       headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  // OTP 세팅
+  setupOtp: async (userId) => {
+    const response = await api.post("/api/otp/setup", { email: userId });
+    return response.data;
+  },
+
+  // OTP 인증
+  verifyInitOtp: async (userId, code) => {
+    const response = await api.post("/api/otp/verify-init", {
+      email: userId,
+      code,
+    });
+    return response.data;
+  },
+
+  // OTP 인증
+  verifyOtp: async (userId, code) => {
+    const response = await api.post("/api/otp/verify", { email: userId, code });
+    return response.data;
+  },
+
+  updateSecretKey: async (userId, secretKey, code) => {
+    const response = await api.post("/api/otp/update", {
+      email: userId,
+      secretKey,
+      code,
     });
     return response.data;
   },

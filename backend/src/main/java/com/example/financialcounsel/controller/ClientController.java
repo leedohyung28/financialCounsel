@@ -5,6 +5,7 @@ import com.example.financialcounsel.dto.client.ClientResponse;
 import com.example.financialcounsel.dto.client.LoginResponse;
 import com.example.financialcounsel.global.common.CommonResponse;
 import com.example.financialcounsel.service.ClientService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +14,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/client")
+@RequiredArgsConstructor
 public class ClientController {
     private final ClientService clientService;
-
-    public ClientController(ClientService clientService) {
-        this.clientService = clientService;
-    }
 
     @PostMapping("/searchList")
     public ResponseEntity<CommonResponse<List<ClientVO>>> selectListClient(@RequestBody ClientVO formObject) {
