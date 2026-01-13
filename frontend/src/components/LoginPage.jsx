@@ -100,10 +100,15 @@ export default function LoginPage() {
     if (!email) return alert("이메일을 입력해주세요.");
     setLoading(true);
     try {
-      // API 호출 (예시)
-      alert(`${email}로 임시 비밀번호가 발송되었습니다.`);
-      setFindMode(false);
-      setFindStep(1);
+      const result = await clientApi.sendPwdEmail(email);
+      console.log(result);
+      if (result.success) {
+        alert(`${email}로 임시 비밀번호가 발송되었습니다.`);
+        setFindMode(false);
+        setFindStep(1);
+      } else {
+        alert("발송에 실패했습니다.");
+      }
     } catch {
       alert("발송 중 오류가 발생했습니다.");
     } finally {

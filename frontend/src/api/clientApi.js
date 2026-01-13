@@ -2,17 +2,17 @@ import api from "../utils/axios";
 
 export const clientApi = {
   // ID, 비밀번호 확인
-  loginClient: async (id, password) => {
+  loginClient: async (email, password) => {
     const response = await api.post("/api/client/login", {
-      email: id,
+      email,
       password,
     });
     return response.data;
   },
 
   // ID 확인
-  validId: async (id) => {
-    const response = await api.post("/api/client/search/email", { email: id });
+  validId: async (email) => {
+    const response = await api.post("/api/client/search/email", { email });
     return response.data;
   },
 
@@ -33,8 +33,8 @@ export const clientApi = {
   },
 
   // ID로 직원 확인
-  searchClient: async (id) => {
-    const response = await api.post("/api/client/search", { email: id });
+  searchClient: async (email) => {
+    const response = await api.post("/api/client/search", { email });
     return response.data;
   },
 
@@ -47,30 +47,30 @@ export const clientApi = {
   },
 
   // OTP 세팅
-  setupOtp: async (userId) => {
-    const response = await api.post("/api/otp/setup", { email: userId });
+  setupOtp: async (email) => {
+    const response = await api.post("/api/otp/setup", { email });
     return response.data;
   },
 
   // OTP 인증
-  verifyInitOtp: async (userId, code) => {
+  verifyInitOtp: async (email, code) => {
     const response = await api.post("/api/otp/verify-init", {
-      email: userId,
+      email,
       code,
     });
     return response.data;
   },
 
   // OTP 인증
-  verifyOtp: async (userId, code) => {
-    const response = await api.post("/api/otp/verify", { email: userId, code });
+  verifyOtp: async (email, code) => {
+    const response = await api.post("/api/otp/verify", { email, code });
     return response.data;
   },
 
   // 시크릿키 업데이트
-  updateSecretKey: async (userId, secretKey, code) => {
+  updateSecretKey: async (email, secretKey, code) => {
     const response = await api.post("/api/otp/update", {
-      email: userId,
+      email,
       secretKey,
       code,
     });
@@ -78,9 +78,17 @@ export const clientApi = {
   },
 
   // 시크릿키 존재 여부 확인
-  validSecretKey: async (userId) => {
+  validSecretKey: async (email) => {
     const response = await api.post("/api/otp/valid", {
-      email: userId,
+      email,
+    });
+    return response.data;
+  },
+
+  // 이메일로 임시 패스워드 전송
+  sendPwdEmail: async (email) => {
+    const response = await api.post("/api/email/temp", {
+      email,
     });
     return response.data;
   },

@@ -7,11 +7,11 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.retry.annotation.Recover;
 
 import java.util.UUID;
 
@@ -42,7 +42,7 @@ public class EmailService {
         clientVO.setPassword(tmpPwd);
 
         try {
-            // 메일 발송W
+            // 메일 발송
             sendMail(email, tmpPwd);
 
             // DB에 비밀번호 업데이트
