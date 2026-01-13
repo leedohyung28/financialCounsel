@@ -106,7 +106,7 @@ public class OtpService {
 
        String secret = client.getSecretOtpKey();
 
-        if (secret == null) {
+        if (secret.isBlank()) {
             throw new RuntimeException("OTP 시크릿키가 존재하지 않습니다. 다시 회원가입을 진행해주세요.");
         }
 

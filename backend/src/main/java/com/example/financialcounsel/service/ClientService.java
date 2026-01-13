@@ -165,18 +165,20 @@ public class ClientService {
         clientVO.setUseYn(Boolean.TRUE);
 
         return clientRepository.findById(clientVO.getId()).map(existingClient -> {
-            existingClient.setName(clientVO.getName());
-            existingClient.setEmail(clientVO.getEmail());
             if(clientVO.getPassword() != null) {
                 existingClient.setPassword(EncryptUtils.encryptPassword(clientVO.getPassword()));
             }
+
+            // 존재하는 값만 Update
+            CommonEntityUtils.copyUnEmptyProperties(clientVO, existingClient);
+
             return clientRepository.save(existingClient);
         }).orElseThrow(() -> new RuntimeException("수정할 직원 정보를 찾을 수 없습니다."));
     }
 
     /**
      *
-     * 직원 수정 (Update)
+     * 직원 OTP 시크릿 키 수정 (Update)
      * @param clientVO 객체
      * @return ClientVO 객체
      */
@@ -185,6 +187,23 @@ public class ClientService {
         ValidationUtils.validateSelectedFields(clientVO, List.of("email", "secretOtpKey"), "수정");
 
         return clientRepository.findByEmail(clientVO.getEmail()).map(existingClient -> {
+            existingClient.setSecretOtpKey(clientVO.getSecretOtpKey());
+            return clientRepository.save(existingClient);
+        }).orElseThrow(() -> new RuntimeException("OTP를 설정할 직원 정보를 찾을 수 없습니다."));
+    }
+
+    /**
+     *
+     * 직원 비밀번호 수정 (Update)
+     * @param clientVO 객체
+     * @return ClientVO 객체
+     */
+    public ClientVO updateClientPassword(ClientVO clientVO) {
+        // 직원명, 비밀번호 필수 입력 검증
+        ValidationUtils.validateSelectedFields(clientVO, List.of("email", "password"), "수정");
+
+        return clientRepository.findByEmail(clientVO.getEmail()).map(existingClient -> {
+            existingClient.setPassword(EncryptUtils.encryptPassword(clientVO.getPassword()));
             return clientRepository.save(existingClient);
         }).orElseThrow(() -> new RuntimeException("OTP를 설정할 직원 정보를 찾을 수 없습니다."));
     }
