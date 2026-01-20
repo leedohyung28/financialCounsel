@@ -12,6 +12,7 @@ export default function FindAccount({
   setFindMode,
   handleSendTempPw,
   handleOtpForReset,
+  loading,
 }) {
   return (
     <div className="find-account-area">
@@ -53,16 +54,33 @@ export default function FindAccount({
       {findStep === 2 && (
         <div className="recovery-options">
           <p className="title-sub">복구 방식을 선택하세요.</p>
-          <div className="option-card" onClick={handleSendTempPw}>
-            <div className="option-icon">📧</div>
+          <div
+            className={`option-card ${loading ? "disabled" : ""}`}
+            onClick={!loading ? handleSendTempPw : null}
+            style={{
+              pointerEvents: loading ? "none" : "auto",
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            <div className="option-icon">
+              {loading ? (
+                <div
+                  className="spinner"
+                  style={{ borderTopColor: "#1a73e8" }}
+                />
+              ) : (
+                "📧"
+              )}
+            </div>
             <div className="option-text">
-              <strong>임시 비밀번호 발송</strong>
+              <strong>{loading ? "발송 중..." : "임시 비밀번호 발송"}</strong>
               <span>이메일로 임시 비밀번호를 보냅니다.</span>
             </div>
           </div>
           <div
             className="option-card"
             onClick={() => {
+              if (loading) return;
               setOtp("");
               setFindStep(4);
             }}
@@ -76,6 +94,7 @@ export default function FindAccount({
           <button
             className="link-btn full-width"
             onClick={() => setFindStep(1)}
+            disabled={loading}
           >
             뒤로 가기
           </button>
@@ -97,8 +116,19 @@ export default function FindAccount({
             <button className="link-btn" onClick={() => setFindStep(2)}>
               이전
             </button>
-            <button className="primary-btn" onClick={handleOtpForReset}>
-              인증하기
+            <button
+              className="primary-btn"
+              onClick={handleOtpForReset}
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="btn-content">
+                  <div className="spinner" />
+                  <span>처리 중</span>
+                </div>
+              ) : (
+                "인증하기"
+              )}
             </button>
           </div>
         </div>

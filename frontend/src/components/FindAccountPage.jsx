@@ -90,7 +90,6 @@ export default function LoginPage() {
 
   return (
     <div className={`root ${isDark ? "theme-dark" : "theme-light"}`}>
-      {/* 테마 토글 생략... */}
       <div className="login-card">
         {step !== 4 && (
           <div className="title-area">
@@ -101,8 +100,8 @@ export default function LoginPage() {
               {step === 1
                 ? "계정 사용"
                 : step === 2
-                ? "비밀번호 입력"
-                : "Authenticator 코드 입력"}
+                  ? "비밀번호 입력"
+                  : "Authenticator 코드 입력"}
             </div>
           </div>
         )}
@@ -181,10 +180,10 @@ export default function LoginPage() {
               {loading
                 ? "처리 중..."
                 : step === 1
-                ? "다음"
-                : step === 2
-                ? "로그인"
-                : "인증"}
+                  ? "다음"
+                  : step === 2
+                    ? "로그인"
+                    : "인증"}
             </button>
           </div>
         )}

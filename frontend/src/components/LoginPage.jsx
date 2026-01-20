@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { clientApi } from "../api/clientApi";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../hooks/useNavigation";
@@ -41,6 +41,12 @@ export default function LoginPage() {
     setIsError(true);
     setTimeout(() => setIsError(false), 500);
   };
+
+  // --- 에러 메시지 초기화 --
+  useEffect(() => {
+    setErrorMsg("");
+    setIsError(false);
+  }, [step, findMode, findStep]);
 
   // --- 핸들러: 로그인 로직 ---
   const handleNextStep = async () => {
@@ -101,16 +107,18 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const result = await clientApi.sendPwdEmail(email);
-      console.log(result);
+
       if (result.success) {
-        alert(`${email}로 임시 비밀번호가 발송되었습니다.`);
+        const successMsg = result.data || "메일이 성공적으로 발송되었습니다.";
+        alert(`${email}로 ${successMsg}`);
         setFindMode(false);
         setFindStep(1);
       } else {
-        alert("발송에 실패했습니다.");
+        alert(result.message || "발송에 실패했습니다.");
       }
-    } catch {
-      alert("발송 중 오류가 발생했습니다.");
+    } catch (error) {
+      const serverError = error.result?.data?.message;
+      alert(serverError || "서버와 통신 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -163,6 +171,7 @@ export default function LoginPage() {
             setFindMode={setFindMode}
             handleSendTempPw={handleSendTempPw}
             handleOtpForReset={handleOtpForReset}
+            loading={loading}
           />
         ) : (
           <>
@@ -173,15 +182,15 @@ export default function LoginPage() {
                   {step === 1
                     ? "로그인"
                     : step === 2
-                    ? "환영합니다"
-                    : "2단계 인증"}
+                      ? "환영합니다"
+                      : "2단계 인증"}
                 </h1>
                 <div className="title-sub">
                   {step === 1
                     ? "계정 사용"
                     : step === 2
-                    ? "비밀번호 입력"
-                    : "Authenticator 코드 입력"}
+                      ? "비밀번호 입력"
+                      : "Authenticator 코드 입력"}
                 </div>
               </div>
             )}
@@ -286,10 +295,10 @@ export default function LoginPage() {
                   {loading
                     ? "처리 중..."
                     : step === 1
-                    ? "다음"
-                    : step === 2
-                    ? "로그인"
-                    : "인증"}
+                      ? "다음"
+                      : step === 2
+                        ? "로그인"
+                        : "인증"}
                 </button>
               </div>
             )}
