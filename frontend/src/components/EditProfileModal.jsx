@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { faCamera, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
-import api from "../utils/axios";
+import { clientApi } from "../api/clientApi";
 import {
-  pwRegex,
-  formatPhone,
-  formatBirth,
   checkFileSize,
+  formatBirth,
+  formatPhone,
+  pwRegex,
   validateBirth,
 } from "../context/FormatUtils";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCamera, faTimes } from "@fortawesome/free-solid-svg-icons";
-import "../styles/EditProfileModal.css";
-import { clientApi } from "../api/clientApi";
-import { getSession } from "../utils/session";
 import { formatTime, handleSendOtp, onVerifyOtp } from "../context/PhoneAuth";
+import "../styles/EditProfileModal.css";
+import { getSession } from "../utils/session";
 import PhoneAuth from "./common/PhoneAuth";
 
 export default function EditProfileModal({ onClose }) {
@@ -46,22 +45,19 @@ export default function EditProfileModal({ onClose }) {
         const userId = session.userId;
         const result = await clientApi.searchClient(userId);
 
-        if (result.success) {
+        if (result.success && result.data) {
           const user = result.data;
           setForm((prev) => ({
             ...prev,
-            userId: userId,
+            userId: session.userId,
             name: user.name || "",
             birth: user.birth || "",
             gender: user.sex || "",
             region: user.location || "",
-            phone: formatPhone(user.phoneNum) || "",
+            phone: user.phoneNum ? formatPhone(user.phoneNum) : "",
           }));
           if (user.birth) setSelectedDate(new Date(user.birth));
           if (user.profilePath) setPreviewUrl(user.profilePath);
-        } else {
-          alert(result.message);
-          onClose();
         }
       } catch (error) {
         console.error("데이터 로드 실패", error);
@@ -128,7 +124,7 @@ export default function EditProfileModal({ onClose }) {
     if (form.password) {
       if (!pwRegex.test(form.password)) {
         alert(
-          "비밀번호 규칙을 확인해주세요 (8자 이상, 영문/숫자/특수문자 포함)."
+          "비밀번호 규칙을 확인해주세요 (8자 이상, 영문/숫자/특수문자 포함).",
         );
         return;
       }
@@ -146,16 +142,17 @@ export default function EditProfileModal({ onClose }) {
 
     try {
       const formData = new FormData();
+      formData.append("email", form.userId);
       formData.append("name", form.name);
       if (form.password) formData.append("password", form.password);
       formData.append("phoneNum", form.phone.replace(/[^0-9]/g, ""));
       formData.append("sex", form.gender);
       formData.append("location", form.region);
-      formData.append("birthday", form.birth); // 서버 필드명에 맞춤
+      if (form.birth) formData.append("birthday", form.birth);
       if (form.profileImage) formData.append("image", form.profileImage);
 
-      const response = await api.put("/api/client/update", formData);
-      if (response.data.success) {
+      const response = await clientApi.updateClient(formData);
+      if (response.success) {
         alert("정보가 수정되었습니다.");
         onClose();
         window.location.reload();
@@ -210,6 +207,7 @@ export default function EditProfileModal({ onClose }) {
                   value={form.password}
                   onChange={onChange}
                   placeholder="변경 시에만 입력"
+                  autoFocus
                 />
                 <span className="tooltip-text">
                   8자 이상, 영문/숫자/특수문자 포함
@@ -316,7 +314,7 @@ export default function EditProfileModal({ onClose }) {
             취소
           </button>
           <button className="primary-btn" onClick={handleSubmit}>
-            저장하기
+            저장
           </button>
         </div>
       </div>

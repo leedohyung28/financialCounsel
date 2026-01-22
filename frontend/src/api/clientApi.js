@@ -38,6 +38,16 @@ export const clientApi = {
     return response.data;
   },
 
+  // 직원 정보 수정
+  updateClient: async (formData) => {
+    const response = await api.post("/api/client/update", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
   // 회원 정보 수정
   updateProfile: async (formData) => {
     const response = await api.post("/api/client/update", formData, {

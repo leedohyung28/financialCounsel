@@ -7,19 +7,33 @@ export default function PasswordVerifyModal({ onClose, onSuccess }) {
   const [password, setPassword] = useState("");
 
   const handleVerify = async () => {
+    const session = getSession("userSession");
+    if (!session || !session.userId) {
+      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+      return;
+    }
+
     try {
-      const userId = getSession("userSession").userId;
+      const userId = session.userId;
 
       // 서버의 비밀번호 확인
       const result = await clientApi.loginClient(userId, password);
-
-      if (result.success) {
-        onSuccess(); // 확인 성공 시 다음 단계로
+      console.log(result);
+      if (result.success && result.data.resultCode === 0) {
+        onSuccess();
       } else {
         alert("비밀번호가 일치하지 않습니다.");
       }
     } catch (error) {
-      alert("인증 중 오류가 발생했습니다.");
+      // 3. 서버가 400, 401 에러 등을 던졌을 때 catch에서 처리
+      console.error("인증 에러 상세:", error);
+
+      const serverMessage = error.response?.data?.message;
+      if (serverMessage) {
+        alert(serverMessage); // 서버에서 보낸 에러 메시지 노출
+      } else {
+        alert("비밀번호가 일치하지 않거나 인증에 실패했습니다.");
+      }
     }
   };
 
@@ -42,6 +56,7 @@ export default function PasswordVerifyModal({ onClose, onSuccess }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+            autoFocus
           />
         </div>
 

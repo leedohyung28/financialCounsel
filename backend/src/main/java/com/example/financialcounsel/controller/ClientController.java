@@ -73,4 +73,18 @@ public class ClientController {
             return ResponseEntity.badRequest().body(CommonResponse.error(e.getMessage()));
         }
     }
+
+    /**
+     * 직원 수정
+     */
+    @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CommonResponse<ClientVO>> updateClient(@ModelAttribute ClientVO formObject) {
+        try {
+            // MultipartFile로 들어온 데이터를 byte[]로 변환하는 작업은 Service에서 수행
+            ClientVO savedClient = clientService.updateClient(formObject);
+            return ResponseEntity.ok(CommonResponse.success(savedClient));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(CommonResponse.error(e.getMessage()));
+        }
+    }
 }

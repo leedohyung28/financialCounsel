@@ -132,7 +132,7 @@ public class ClientService {
      */
     public ClientVO insertClient(ClientVO clientVO) {
         // 직원명 필수 입력 검증
-        ValidationUtils.validateNonNullFields(clientVO, "등록");
+        ValidationUtils.validateSelectedFields(clientVO, List.of("email", "password"), "수정");
         // 비밀번호 암호화 및 설정
         String encryptedInputPassword = EncryptUtils.encryptPassword(clientVO.getPassword());
         clientVO.setPassword(encryptedInputPassword);
@@ -164,13 +164,15 @@ public class ClientService {
         // 직원 등록은 항상 사용 가능하도록 설정
         clientVO.setUseYn(Boolean.TRUE);
 
-        return clientRepository.findById(clientVO.getId()).map(existingClient -> {
+        return clientRepository.findByEmail(clientVO.getEmail()).map(existingClient -> {
             if(clientVO.getPassword() != null) {
                 existingClient.setPassword(EncryptUtils.encryptPassword(clientVO.getPassword()));
             }
 
             // 존재하는 값만 Update
             CommonEntityUtils.copyUnEmptyProperties(clientVO, existingClient);
+
+            CommonEntityUtils.commonUpdateFunc(clientVO);
 
             return clientRepository.save(existingClient);
         }).orElseThrow(() -> new RuntimeException("수정할 직원 정보를 찾을 수 없습니다."));

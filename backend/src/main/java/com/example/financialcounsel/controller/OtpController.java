@@ -90,6 +90,7 @@ public class OtpController {
             return ResponseEntity.badRequest().body(CommonResponse.error(e.toString()));
         }
     }
+
     // OTP 재등록
     @PostMapping("/update")
     public ResponseEntity<CommonResponse<?>> updateSecretKey(@RequestBody OtpVerifyRequest otpVerifyRequest) {
